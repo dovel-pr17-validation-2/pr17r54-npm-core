@@ -1,0 +1,45 @@
+{
+ "name": "Input",
+ "group": "components",
+ "props": {
+  "id": "!string",
+  "label": "string",
+  "placeholder": "string",
+  "size": "FieldSize",
+  "error": "boolean = false",
+  "errorMessage": "ReactNode",
+  "description": "ReactNode",
+  "corners": "\"none\" | \"top\" | \"right\" | \"bottom\" | \"left\" | \"top-left\" | \"top-right\" | \"bottom-right\" | \"bottom-left\"",
+  "className": "string",
+  "style": "React.CSSProperties",
+  "prefix": "ReactNode",
+  "suffix": "ReactNode",
+  "variant": "\"default\" | \"ghost\" = default",
+  "focusRing": "boolean = false",
+  "characterCount": "boolean",
+  "cursor": "undefined | \"interactive\"",
+  "validate": "(value: ReactNode) => ReactNode | null",
+  "loading": "boolean = false",
+  "span": "number"
+ },
+ "tags": [
+  "form"
+ ],
+ "pairsWith": [
+  "PasswordInput",
+  "Select",
+  "Switch",
+  "Form"
+ ],
+ "mixinsRef": [],
+ "types": {
+  "FieldSize": [
+   "xl",
+   "l",
+   "m",
+   "s",
+   "xs",
+   "xxs"
+  ]
+ }
+}

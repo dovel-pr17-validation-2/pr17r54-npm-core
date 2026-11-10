@@ -1,0 +1,471 @@
+---
+title: "Flex"
+summary: "The layout primitive every other component is built on: one element, a direction, and token-driven spacing, size and surface."
+updatedAt: "2026-10-21"
+docs: "once-ui/components/flex.mdx"
+github: "components/Flex.tsx"
+navLabel: "Flex"
+navIcon: "components"
+---
+
+`Flex` is the element the rest of Once UI is made of. It renders a flex
+container and takes every layout, spacing, size and surface prop in the system,
+so a page is composed by nesting it rather than by writing CSS.
+
+You will rarely write `Flex` itself. `Row` and `Column` are the same component
+with `direction` preset, and reading `<Column gap="16">` beats reading
+`<Flex direction="column" gap="16">`:
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codes={[
+    {
+      code:
+`<Column gap="16">   // Flex, direction: column
+<Row gap="16">      // Flex, direction: row
+<Flex s={{ direction: "column" }}>  // Flex, when the direction changes`,
+      language: "tsx",
+      label: "Prefer Row and Column"
+    }
+  ]}
+/>
+
+Reach for `Flex` directly when the direction is conditional — a row on desktop
+that stacks on a phone — since that is the one thing a preset cannot express.
+
+## Direction and alignment
+
+`horizontal` and `vertical` are named for the axis you see, not for flexbox's
+main and cross axis, so they mean the same thing whichever way the container
+runs.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  preview={
+    <Row fillWidth gap="8" horizontal="center" vertical="center" padding="16" radius="m" border>
+      <Flex width="40" height="40" radius="m" background="brand-alpha-medium" />
+      <Flex width="40" height="24" radius="m" background="brand-alpha-medium" />
+      <Flex width="40" height="56" radius="m" background="brand-alpha-medium" />
+    </Row>
+  }
+  codes={[
+    {
+      code:
+`<Row gap="8" horizontal="center" vertical="center">
+    ...
+</Row>`,
+      language: "tsx",
+      label: "Alignment"
+    }
+  ]}
+/>
+
+<PropsTable
+  mixin="FlexProps"
+  describe={{
+    direction: "Which way children run. Row and Column preset this.",
+    horizontal: "Alignment along the horizontal axis, whatever the direction.",
+    vertical: "Alignment along the vertical axis, whatever the direction.",
+    center: "Shorthand for horizontal and vertical both centred.",
+    wrap: "Let children flow onto another line instead of shrinking.",
+    flex: "This element's own grow/shrink value inside its parent.",
+  }}
+/>
+
+## Size
+
+Sizes take a spacing token, a number (read as rem), or any CSS unit. `fill` and
+`fit` are the two you want most: fill the parent, or shrink to the content.
+
+<PropsTable
+  mixin="SizeProps"
+  describe={{
+    width: "Fixed width. A token, a number in rem, or a CSS unit.",
+    height: "Fixed height. A token, a number in rem, or a CSS unit. \"below-header\" is the viewport below the app header.",
+    maxWidth: "Upper bound. The usual way to cap a text column.",
+    minWidth: "Lower bound.",
+    minHeight: "Lower bound.",
+    maxHeight: "Upper bound. Pair with overflowY for a scroll area. Takes \"below-header\" too.",
+    fit: "Shrink to the content on both axes.",
+    fitWidth: "Shrink to the content horizontally.",
+    fitHeight: "Shrink to the content vertically.",
+    fill: "Fill the parent on both axes.",
+    fillWidth: "Fill the parent horizontally.",
+    fillHeight: "Fill the parent vertically.",
+    aspectRatio: "Hold a ratio as the element resizes, e.g. 16 / 9.",
+  }}
+/>
+
+## Spacing
+
+Space between siblings is `gap` on the parent; space inside an element is
+`padding`. Prefer both over `margin` — a layout built from gaps stays correct
+when a child is added, removed or reordered.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codes={[
+    {
+      code:
+`<Column gap="16" padding="24">    // space between children, space inside
+<Column marginBottom="16">        // last resort: space against a sibling`,
+      language: "tsx",
+      label: "Gap over margin"
+    }
+  ]}
+/>
+
+<PropsTable
+  mixin="SpacingProps"
+  describe={{
+    padding: "Space inside, all four sides.",
+    paddingX: "Space inside, left and right.",
+    paddingY: "Space inside, top and bottom.",
+    margin: "Space outside, all four sides. Every margin prop also takes \"auto\": marginLeft=\"auto\" pushes an item to the end of its row.",
+    marginX: "Space outside, left and right.",
+    marginY: "Space outside, top and bottom.",
+    gap: "Space between children. \"-1\" collapses the gap to overlap borders.",
+    top: "Offset, with position set.",
+    right: "Offset, with position set.",
+    bottom: "Offset, with position set.",
+    left: "Offset, with position set.",
+    translateX: "Shift without affecting layout.",
+    translateY: "Shift without affecting layout.",
+  }}
+/>
+
+## Surface
+
+Background, border, radius and shadow are all tokens. A colour is a scheme and a
+weight (`brand-medium`, `neutral-alpha-weak`), never a hex.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  preview={
+    <Row fillWidth gap="12" wrap>
+      <Flex width="80" height="56" radius="m" background="surface" border="neutral-alpha-medium" />
+      <Flex width="80" height="56" radius="m" background="brand-alpha-weak" border="brand-alpha-medium" />
+      <Flex width="80" height="56" radius="l" background="surface" shadow="l" />
+    </Row>
+  }
+  codes={[
+    {
+      code:
+`<Flex radius="m" background="surface" border="neutral-alpha-medium" />
+<Flex radius="m" background="brand-alpha-weak" border="brand-alpha-medium" />
+<Flex radius="l" background="surface" shadow="l" />`,
+      language: "tsx",
+      label: "Surface"
+    }
+  ]}
+/>
+
+<PropsTable
+  mixin="StyleProps"
+  describe={{
+    background: "Surface colour. A token, or surface / page / overlay / transparent.",
+    solid: "Solid fill, for a control that sits on top of a surface.",
+    border: "Border colour on all four sides. true uses the neutral default.",
+    borderStyle: "Solid or dashed.",
+    borderWidth: "Border thickness in pixels.",
+    radius: "Corner roundness. Add a nest value to match an inner element.",
+    shadow: "Elevation.",
+    emphasis: "Draws attention: an animated brand-to-accent edge round the border. edge is the edge alone, glow (or true) adds a soft halo, aura a wide one.",
+    cursor: "Pointer style. \"interactive\" is the one to use for anything clickable.",
+    textVariant: "Set the text style for everything inside in one prop.",
+    blendMode: "mix-blend-mode, as a class. color-dodge and plus-lighter are the glow modes.",
+    blur: "filter: blur(). xs (0.25rem) to xl (3rem) is a class; a number is rem.",
+    backdropBlur: "backdrop-filter: blur(), for what shows through a translucent fill. Same scale as blur.",
+    theme: "Render this subtree light or dark: data-theme, typed.",
+    themeBorder: "The subtree's corner style (ThemeProvider's border): data-border.",
+    themeSolid: "The subtree's solid fill style (ThemeProvider's solid): data-solid.",
+    themeSurface: "The subtree's surface style (ThemeProvider's surface): data-surface.",
+  }}
+/>
+
+### Effects without a style object
+
+`blendMode`, `blur`, `backdropBlur` and `userSelect` are classes, so setting
+them keeps `Flex` and `Grid` server components — a `style` object does not.
+The blur scale is the static spacing steps: `xs` 0.25rem, `s` 0.5rem, `m`
+1rem, `l` 2rem, `xl` 3rem; a number is rem, written inline on the server.
+`blur` sets the whole `filter`, so a blur combined with another filter
+function still goes in `style`.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codes={[
+    {
+      code:
+`<Flex position="absolute" fill blur="xl" blendMode="color-dodge" pointerEvents="none" />
+<Column background="overlay" backdropBlur="m" padding="24">...</Column>
+<Text userSelect="none">00:42</Text>`,
+      language: "tsx",
+      label: "Effects"
+    }
+  ]}
+/>
+
+`transform` is deliberately not a prop. It is what animations drive, frame by
+frame, so it stays in `style`; for a static shift, `translateX` and
+`translateY` do the same without leaving the server.
+
+### Emphasis
+
+`emphasis` draws attention to an element: a brand-to-accent edge travels
+round its border. Each value names a look rather than a size: `edge` is the
+edge alone, `glow` (or `true`) adds a soft halo for bars and inputs, and
+`aura` a wide one for panels and hero cards. It is a class, so the element
+stays a server component, and it stands still under `prefers-reduced-motion`.
+With a `border`, the edge lies over it.
+
+The edge and halo draw on `::before` and `::after`, under the content, so an
+`overflow` that clips the element clips the halo too. Recolour or slow it
+with custom properties: `--emphasis-from`, `--emphasis-to`,
+`--emphasis-width` and `--emphasis-duration`.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  preview={
+    <Column fillWidth gap="32" paddingY="24" horizontal="center">
+      <Row emphasis radius="full" background="surface" border="neutral-alpha-weak" paddingX="20" paddingY="12" gap="8">
+        <Text variant="label-default-s">Landing page</Text>
+        <Text variant="label-default-s" onBackground="neutral-weak">Docs</Text>
+        <Text variant="label-default-s" onBackground="neutral-weak">Dashboard</Text>
+      </Row>
+      <Row gap="24" wrap horizontal="center">
+        <Flex emphasis="edge" width="80" height="56" radius="m" background="surface" />
+        <Flex emphasis="glow" width="80" height="56" radius="m" background="surface" />
+        <Flex emphasis="aura" width="80" height="56" radius="l" background="surface" />
+      </Row>
+    </Column>
+  }
+  codes={[
+    {
+      code:
+`<Row emphasis radius="full" background="surface" border="neutral-alpha-weak" paddingX="20" paddingY="12">...</Row>
+<Flex emphasis="edge" radius="m" background="surface" />
+<Column emphasis="aura" radius="xl" background="page" padding="32">...</Column>`,
+      language: "tsx",
+      label: "Emphasis"
+    }
+  ]}
+/>
+
+### A themed subtree
+
+`theme`, `themeBorder`, `themeSolid` and `themeSurface` restyle everything
+inside, the way `ThemeProvider` restyles the page: they write `data-theme`,
+`data-border`, `data-solid` and `data-surface`, typed with the provider's own
+values. `theme="dark"` renders the subtree dark; the `dark` boolean only shows
+or hides an element depending on the theme around it.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codes={[
+    {
+      code:
+`<Column theme="dark" background="page" padding="40">...</Column>
+<Row themeBorder="rounded" gap="8">...</Row>
+<Row themeSolid="contrast">...</Row>`,
+      language: "tsx",
+      label: "Themed subtree"
+    }
+  ]}
+/>
+
+## Display and behaviour
+
+<PropsTable
+  mixin="DisplayProps"
+  describe={{
+    as: "Render a different element — section, article, nav, ul.",
+    inline: "Lay out inline rather than as a block.",
+    hide: "Remove from the layout. Most useful per breakpoint.",
+    position: "relative is the default, so it never needs writing.",
+    overflow: "auto, scroll, hidden, clip or visible. clip cuts the content off without making a scroll container, so sticky children keep working.",
+    overflowX: "The same five values, horizontally.",
+    overflowY: "The same five values, vertically. Pair with maxHeight for a scroll area.",
+    scrollbar: "\"minimal\" for a thin scrollbar inside a panel.",
+    transition: "Named duration and easing for whatever changes.",
+    opacity: "In steps of 10.",
+    zIndex: "Stacking order.",
+    pointerEvents: "\"none\" lets clicks fall through a decorative layer.",
+    userSelect: "\"none\" keeps a handle or a timeline label from being selected mid-drag.",
+    dark: "Show only while the theme around it is dark. To make a subtree dark, use theme=\"dark\".",
+    light: "Show only while the theme around it is light.",
+  }}
+/>
+
+## Cursor
+
+`cursor` takes a CSS keyword (`"interactive"` for anything clickable), a
+preset, or a node to draw at the pointer.
+
+### Presets
+
+A preset restyles every cursor inside the element: the arrow over the page,
+the pointer over buttons and links, the I-beam over text fields and the
+blocked sign over disabled controls. The browser draws it, so it never lags
+and touch screens never see it. `soft` is a dark wedge with a white rim that
+reads on light and dark pages alike, `rounded` is the classic arrow rounded
+off and turns light in dark mode, and `dot` is a small dot that opens into a
+ring over anything clickable. `"system"` turns a preset off below it.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  preview={
+    <Row fillWidth gap="12" s={{ direction: "column" }}>
+      {["soft", "rounded", "dot"].map((preset) => (
+        <Column key={preset} cursor={preset} flex={1} gap="12" padding="16" radius="l" border="neutral-alpha-medium" background="surface">
+          <Text variant="label-strong-s">{preset}</Text>
+          <Input id={`cursor-${preset}`} placeholder="Type here" />
+          <Row gap="8">
+            <Button size="s">Click</Button>
+            <Button size="s" variant="secondary" disabled>Disabled</Button>
+          </Row>
+        </Column>
+      ))}
+    </Row>
+  }
+  codes={[
+    {
+      code:
+`<Column cursor="soft">
+  <Input id="name" placeholder="Type here" />   // I-beam
+  <Button>Click</Button>                         // pointer
+  <Button disabled>Disabled</Button>             // blocked
+</Column>`,
+      language: "tsx",
+      label: "Preset"
+    }
+  ]}
+/>
+
+For the whole app, set `cursor` in the `style` section of `once-ui.config`
+(or on `ThemeProvider`). `ThemeInit` writes it before the first paint:
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codes={[
+    {
+      code:
+`// once-ui.config
+const style = {
+  theme: "system",
+  cursor: "soft", // "rounded", "dot" or "system"
+  // ...
+};`,
+      language: "ts",
+      label: "App-wide"
+    }
+  ]}
+/>
+
+Controls follow the preset on their own. `cursorInteractive: "default"`
+still keeps the arrow over them, the preset's arrow.
+
+### A node that follows the pointer
+
+Pass a node and it is drawn at the pointer over the element's own surface. It
+steps aside wherever the native cursor is back, over a button, a link, a text
+field or a nested element with a cursor of its own, so the two never show at
+once. It moves without a React render, fades in and out (instantly with
+reduced motion), and touch input never shows it.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  preview={
+    <Column
+      fillWidth
+      gap="16"
+      padding="32"
+      radius="l"
+      border="neutral-alpha-medium"
+      background="surface"
+      cursor={<Icon name="arrowUpRight" solid="brand-strong" onSolid="brand-strong" padding="12" radius="full" />}
+    >
+      <Text onBackground="neutral-weak">Hover the card, then the button.</Text>
+      <Row>
+        <Button size="s">The pointer comes back here</Button>
+      </Row>
+    </Column>
+  }
+  codes={[
+    {
+      code:
+`<Column
+  cursor={<Icon name="arrowUpRight" solid="brand-strong" padding="12" radius="full" />}
+>
+  <Text>Hover the card, then the button.</Text>
+  <Button>The pointer comes back here</Button>
+</Column>`,
+      language: "tsx",
+      label: "Follower"
+    }
+  ]}
+/>
+
+## Text
+
+Text colour is inherited, so it is set on the container rather than on every
+label inside it.
+
+<PropsTable
+  mixin="CommonProps"
+  describe={{
+    onBackground: "Text colour for content on a background surface.",
+    onSolid: "Text colour for content on a solid fill.",
+    align: "Text alignment.",
+  }}
+/>
+
+## Responsive
+
+Every prop above can be overridden per breakpoint. Pass an object to `xl`, `l`,
+`m`, `s` or `xs` — they cascade down, so `s` also applies at `xs` unless `xs`
+says otherwise. This is how layout adapts; media queries are never needed.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codes={[
+    {
+      code:
+`<Row gap="24" s={{ direction: "column", gap: "16" }}>
+    <Column fillWidth m={{ hide: true }}>Sidebar</Column>
+    <Column fill>Content</Column>
+</Row>`,
+      language: "tsx",
+      label: "Breakpoints"
+    }
+  ]}
+/>
+
+<PropsTable
+  component="Flex"
+  describe={{
+    xl: "Overrides applied at the xl breakpoint and below.",
+    l: "Overrides applied at the l breakpoint and below.",
+    m: "Overrides applied at the m breakpoint and below.",
+    s: "Overrides applied at the s breakpoint and below.",
+    xs: "Overrides applied at the xs breakpoint.",
+  }}
+/>
+
+## Related
+
+- [Row and Column](/basics/structure) — the presets you will use instead
+- [Grid](/components/grid) — for two-dimensional layout
+- [Spacing](/basics/spacing) — the token scale behind `gap` and `padding`
+- [Color](/basics/color) — the scheme and weight behind `background` and `border`

@@ -1,0 +1,18 @@
+{
+ "name": "LayoutProvider",
+ "group": "next",
+ "importFrom": "@once-ui-system/core/next",
+ "props": {
+  "children": "!ReactNode"
+ },
+ "tags": [
+  "provider",
+  "next"
+ ],
+ "pairsWith": [
+  "ThemeProvider",
+  "ToastProvider",
+  "ThemeInit"
+ ],
+ "mixinsRef": []
+}

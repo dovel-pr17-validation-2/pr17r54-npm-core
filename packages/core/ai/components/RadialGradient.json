@@ -1,0 +1,36 @@
+{
+ "name": "RadialGradient",
+ "group": "data",
+ "importFrom": "@once-ui-system/core/data",
+ "props": {
+  "id": "!string",
+  "color": "!string",
+  "cx": "string = 50%",
+  "cy": "string = 50%",
+  "r": "string = 50%",
+  "fx": "string = 50%",
+  "fy": "string = 50%",
+  "stops": "GradientStop[]",
+  "variant": "ChartVariant"
+ },
+ "tags": [
+  "data",
+  "chart"
+ ],
+ "pairsWith": [
+  "PieChart"
+ ],
+ "mixinsRef": [],
+ "types": {
+  "ChartVariant": [
+   "flat",
+   "outline",
+   "gradient"
+  ],
+  "GradientStop": {
+   "offset": "!string",
+   "opacity": "!number",
+   "variant": "ChartVariant"
+  }
+ }
+}

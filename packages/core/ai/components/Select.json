@@ -1,0 +1,53 @@
+{
+ "name": "Select",
+ "group": "components",
+ "extends": [
+  "Input",
+  "DropdownWrapper"
+ ],
+ "props": {
+  "options": "!SelectOptionType[]",
+  "value": "string | string[]",
+  "emptyState": "ReactNode = No results",
+  "onSelect": "(value: string | string[]) => void",
+  "placement": "Placement",
+  "searchable": "boolean = false",
+  "className": "string",
+  "style": "React.CSSProperties",
+  "fillWidth": "boolean = true",
+  "multiple": "boolean = false",
+  "labels": "SelectLabels"
+ },
+ "tags": [
+  "form",
+  "dashboard"
+ ],
+ "pairsWith": [
+  "Input",
+  "Form",
+  "Column"
+ ],
+ "mixinsRef": [],
+ "types": {
+  "OptionProps": "Option props",
+  "Placement": [
+   "top",
+   "right",
+   "bottom",
+   "left",
+   "top-start",
+   "top-end",
+   "right-start",
+   "right-end",
+   "bottom-start",
+   "bottom-end",
+   "left-start",
+   "left-end"
+  ],
+  "SelectLabels": {
+   "search": "string",
+   "clear": "string"
+  },
+  "SelectOptionType": "Omit<OptionProps, \"selected\">"
+ }
+}

@@ -1,0 +1,237 @@
+@use "../styles/breakpoints.scss" as breakpoints;
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
+
+  &.striped tbody tr:nth-child(odd) {
+    background: var(--neutral-alpha-weak);
+  }
+
+  @media (hover: hover) {
+    &.hoverable tbody tr:hover {
+      background: var(--neutral-alpha-weak);
+    }
+  }
+
+  &.clickable .row {
+    cursor: var(--cursor-pointer, pointer);
+
+    @media (hover: hover) {
+      &:hover {
+        background: var(--neutral-alpha-medium);
+      }
+    }
+  }
+
+  &.compact {
+    thead tr th,
+    tbody tr td {
+      padding: var(--static-space-8) var(--static-space-12);
+    }
+  }
+
+  &.stickyHeader {
+    thead {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+
+      tr th {
+        background: var(--surface-background);
+      }
+    }
+  }
+}
+
+.container {
+  &::-webkit-scrollbar {
+    height: var(--static-space-8);
+    width: var(--static-space-8);
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--neutral-alpha-weak);
+    border-radius: var(--radius-s);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--neutral-alpha-medium);
+    border-radius: var(--radius-s);
+
+    @media (hover: hover) {
+      &:hover {
+        background: var(--neutral-alpha-strong);
+      }
+    }
+  }
+}
+
+.thead {
+  tr th {
+    padding: var(--static-space-12) var(--static-space-16);
+    border-bottom: 1px solid var(--neutral-border-medium);
+    background: var(--surface-background);
+    white-space: nowrap;
+  }
+}
+
+.tbody {
+  tr td {
+    padding: var(--static-space-12) var(--static-space-16);
+    border-bottom: 1px solid var(--neutral-border-weak);
+    vertical-align: middle;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.th {
+  user-select: none;
+  transition: var(--transition-micro-medium);
+}
+
+.thSortable {
+  cursor: var(--cursor-pointer, pointer);
+
+  @media (hover: hover) {
+    &:hover {
+      background: var(--neutral-alpha-weak);
+    }
+  }
+}
+
+.thActive {
+  background: var(--neutral-alpha-weak);
+}
+
+// The sort button fills its header cell and takes on the cell's look: a
+// button's own font, colour, alignment and cursor would otherwise leak in.
+.thButton {
+  display: block;
+  width: 100%;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  cursor: inherit;
+}
+
+.thActions {
+  white-space: nowrap;
+}
+
+.thAlignLeft {
+  text-align: left;
+}
+
+.thAlignCenter {
+  text-align: center;
+}
+
+.thAlignRight {
+  text-align: right;
+}
+
+.td {
+  transition: var(--transition-micro-medium);
+}
+
+.tdActions {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.tdAlignLeft {
+  text-align: left;
+}
+
+.tdAlignCenter {
+  text-align: center;
+}
+
+.tdAlignRight {
+  text-align: right;
+}
+
+.row {
+  transition: var(--transition-micro-medium);
+}
+
+.empty,
+.loading {
+  padding: 0 !important;
+  border: none !important;
+}
+
+@include breakpoints.s {
+  .table {
+    thead tr th,
+    tbody tr td {
+      padding: var(--static-space-8) var(--static-space-12);
+    }
+  }
+
+  .thActions,
+  .tdActions {
+    position: sticky;
+    right: 0;
+    background: var(--surface-background);
+  }
+}
+
+// A column's `hide`, per breakpoint: each one hides at and below its width
+// (xl: above l), and a show class undoes a wider breakpoint's hide. Widest
+// first, so where two apply the narrower one wins.
+@include breakpoints.xl {
+  .hideXl {
+    display: none;
+  }
+}
+
+@include breakpoints.l {
+  .hideL {
+    display: none;
+  }
+
+  .showL {
+    display: table-cell;
+  }
+}
+
+@include breakpoints.m {
+  .hideM {
+    display: none;
+  }
+
+  .showM {
+    display: table-cell;
+  }
+}
+
+@include breakpoints.s {
+  .hideS {
+    display: none;
+  }
+
+  .showS {
+    display: table-cell;
+  }
+}
+
+@include breakpoints.xs {
+  .hideXs {
+    display: none;
+  }
+
+  .showXs {
+    display: table-cell;
+  }
+}

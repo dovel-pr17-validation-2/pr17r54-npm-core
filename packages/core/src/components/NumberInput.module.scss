@@ -1,0 +1,34 @@
+.numberInput {
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
+
+.stepper {
+  pointer-events: visibleFill;
+  @media (hover: hover) {
+    &:hover {
+      background-color: var(--neutral-alpha-medium);
+    }
+  }
+}
+// The two steppers sit one above the other inside the field. Their tap areas
+// keep to the steppers' own height, so neither reaches over the other.
+@media (pointer: coarse) {
+  .stepper > :global(.button)::after {
+    height: 100%;
+  }
+}
+// At xxs the steppers sit side by side, so it is their width the tap area has
+// to keep to instead.
+@media (pointer: coarse) {
+  .steppersRow .stepper > :global(.button)::after {
+    width: 100%;
+  }
+}

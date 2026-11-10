@@ -1,0 +1,15 @@
+{
+  "title": "Hooks",
+  "order": 9,
+  "pages": {
+    "useDebounce": 1,
+    "useOgData": 2,
+    "useArrowNavigation": 3,
+    "useHeadingLinks": 4,
+    "useStreamingData": 5,
+    "useStreamingViewport": 6,
+    "useInViewport": 7,
+    "useReducedMotion": 8,
+    "useHotkeys": 9
+  }
+}

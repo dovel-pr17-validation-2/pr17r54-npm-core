@@ -1,0 +1,186 @@
+{
+ "name": "ThemeInit",
+ "group": "components",
+ "props": {
+  "config": "!ThemeInitConfig",
+  "dataStyle": "{ mode?: ChartMode }"
+ },
+ "tags": [
+  "theme",
+  "provider"
+ ],
+ "pairsWith": [
+  "ThemeSwitcher"
+ ],
+ "mixinsRef": [],
+ "types": {
+  "BodyLineHeight": [
+   "90",
+   "100",
+   "110",
+   "120"
+  ],
+  "BodySize": [
+   "90",
+   "95",
+   "100",
+   "105",
+   "110"
+  ],
+  "BorderStyle": [
+   "rounded",
+   "playful",
+   "conservative",
+   "sharp"
+  ],
+  "ChartMode": [
+   "categorical",
+   "divergent",
+   "sequential"
+  ],
+  "CursorPresetValue": [
+   "soft",
+   "rounded",
+   "dot",
+   "system"
+  ],
+  "DeviceFontSize": [
+   "15",
+   "16",
+   "13",
+   "14",
+   "17",
+   "18"
+  ],
+  "InteractiveCursor": [
+   "default",
+   "pointer"
+  ],
+  "NeutralColor": [
+   "sand",
+   "gray",
+   "slate",
+   "rose",
+   "mint",
+   "dusk"
+  ],
+  "OnceUIStyleConfig": {
+   "theme": "Theme",
+   "defaultTheme": "Theme",
+   "neutral": "NeutralColor | \"custom\"",
+   "brand": "Schemes | \"custom\"",
+   "accent": "Schemes | \"custom\"",
+   "solid": "SolidType",
+   "solidStyle": "SolidStyle",
+   "border": "BorderStyle",
+   "surface": "SurfaceStyle",
+   "transition": "TransitionStyle",
+   "scaling": "ScalingSize",
+   "bodySize": "BodySize",
+   "bodyLineHeight": "BodyLineHeight",
+   "desktopSize": "DeviceFontSize",
+   "tabletSize": "DeviceFontSize",
+   "mobileSize": "DeviceFontSize",
+   "cursorInteractive": "InteractiveCursor",
+   "cursor": "CursorPresetValue",
+   "brandSeed": "string",
+   "accentSeed": "string",
+   "neutralSeed": "string",
+   "brandScale": "ThemedSchemeScale",
+   "accentScale": "ThemedSchemeScale",
+   "neutralScale": "ThemedSchemeScale",
+   "pageBackground": "ThemeColor",
+   "surfaceBackground": "ThemeColor"
+  },
+  "ScalingSize": [
+   "90",
+   "95",
+   "100",
+   "105",
+   "110"
+  ],
+  "SchemeRampWeight": [
+   "100",
+   "200",
+   "300",
+   "400",
+   "500",
+   "600",
+   "700",
+   "800",
+   "900",
+   "1000",
+   "1100",
+   "1200"
+  ],
+  "SchemeScale": "Partial< Record<SchemeRampWeight | \"600-15\" | \"600-30\" | \"600-50\", string> >",
+  "SchemeScaleByTheme": {
+   "light": "SchemeScale",
+   "dark": "SchemeScale"
+  },
+  "Schemes": [
+   "blue",
+   "indigo",
+   "violet",
+   "magenta",
+   "pink",
+   "red",
+   "orange",
+   "yellow",
+   "moss",
+   "green",
+   "emerald",
+   "aqua",
+   "cyan"
+  ],
+  "SolidStyle": [
+   "flat",
+   "plastic"
+  ],
+  "SolidType": [
+   "color",
+   "contrast",
+   "inverse"
+  ],
+  "SurfaceStyle": [
+   "filled",
+   "translucent"
+  ],
+  "Theme": [
+   "dark",
+   "light",
+   "system"
+  ],
+  "ThemeColor": [
+   "string",
+   "{ light?: string | undefined; dark?: string | undefined; }"
+  ],
+  "ThemeInitAttributeConfig": {
+   "theme": "!string",
+   "brand": "!string",
+   "accent": "!string",
+   "neutral": "!string",
+   "solid": "!string",
+   "solid-style": "!string",
+   "border": "!string",
+   "surface": "!string",
+   "transition": "!string",
+   "scaling": "!string",
+   "viz-style": "!string"
+  },
+  "ThemeInitConfig": [
+   "OnceUIStyleConfig",
+   "ThemeInitAttributeConfig"
+  ],
+  "ThemedSchemeScale": [
+   "Partial<Record<SchemeRampWeight | \"600-15\" | \"600-30\" | \"600-50\", string>>",
+   "SchemeScaleByTheme"
+  ],
+  "TransitionStyle": [
+   "none",
+   "all",
+   "micro",
+   "macro"
+  ]
+ }
+}

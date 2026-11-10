@@ -1,0 +1,45 @@
+{
+ "name": "DateInput",
+ "group": "components",
+ "extends": [
+  "Input"
+ ],
+ "props": {
+  "id": "!string",
+  "label": "string",
+  "placeholder": "string",
+  "value": "Date",
+  "defaultValue": "Date",
+  "onChange": "(date: Date) => void",
+  "minHeight": "number",
+  "className": "string",
+  "style": "React.CSSProperties",
+  "timePicker": "boolean = false",
+  "minDate": "Date",
+  "maxDate": "Date",
+  "locale": "string",
+  "labels": "DatePickerLabels"
+ },
+ "tags": [
+  "form"
+ ],
+ "pairsWith": [
+  "DatePicker",
+  "Form"
+ ],
+ "mixinsRef": [],
+ "types": {
+  "DatePickerLabels": {
+   "previousMonth": "string",
+   "nextMonth": "string",
+   "month": "(month: string) => string",
+   "year": "(year: number) => string",
+   "backToCalendar": "string",
+   "apply": "string",
+   "hours": "string",
+   "minutes": "string",
+   "am": "string",
+   "pm": "string"
+  }
+ }
+}

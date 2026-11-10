@@ -1,0 +1,236 @@
+---
+title: "Banner"
+summary: "The Banner component displays important information in a highlighted horizontal bar across the interface."
+updatedAt: "2026-10-24"
+docs: "once-ui/components/banner.mdx"
+github: "components/Banner.tsx"
+navLabel: "Banner"
+navIcon: "components"
+---
+
+A simple component for displaying important announcements, notifications, or status messages in a prominent horizontal bar. Commonly used to draw attention to critical information or updates.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  preview={
+    <Column fillWidth>
+      <Banner>
+        Free shipping on orders over $50
+      </Banner>
+      <Row fillWidth padding="8">
+        <Background height="64" fillWidth radius="m" border="neutral-alpha-medium" lines={{display: true, angle: -45, color: "neutral-alpha-weak", size: "8", thickness: 1}}/>
+      </Row>
+    </Column>
+  }
+  previewPadding="0"
+  codes={[
+    {
+      code:
+`<Banner>
+    Free shipping on orders over $50
+</Banner>`,
+      language: "tsx",
+      label: "Banner"
+    }
+  ]}
+/>
+
+## Announcement
+
+A launch strip: a soft mesh drawn from the theme's brand and accent scales, an inline link, and a dismiss button. With a `dismissKey` the dismissal is remembered in the browser and the banner stays hidden from the first paint on later visits (ThemeInit reads it). Use a new key for each announcement.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  previewPadding="0"
+  preview={
+    <Column fillWidth>
+      <Banner variant="mesh" dismissible link={{ label: "Try it out", href: "#" }}>
+        Once UI 3.0 is here: our fastest, most agent-friendly release yet.
+      </Banner>
+      <Row fillWidth padding="8">
+        <Background height="64" fillWidth radius="m" border="neutral-alpha-medium" lines={{display: true, angle: -45, color: "neutral-alpha-weak", size: "8", thickness: 1}}/>
+      </Row>
+    </Column>
+  }
+  codes={[
+    {
+      code:
+`<Banner
+  variant="mesh"
+  dismissKey="launch-3-0"
+  link={{ label: "Try it out", href: "/changelog" }}
+>
+  Once UI 3.0 is here: our fastest, most agent-friendly release yet.
+</Banner>`,
+      language: "tsx",
+      label: "Announcement"
+    }
+  ]}
+/>
+
+Pick the colour scales the mesh is drawn from with `meshColors`.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  previewPadding="8"
+  preview={
+    <Column fillWidth gap="8">
+      <Banner variant="mesh" radius="s" meshColors={["success", "info", "accent"]}>
+        Your workspace is ready.
+      </Banner>
+      <Banner variant="mesh" radius="s" meshColors={["warning", "danger"]}>
+        Scheduled maintenance on Sunday, 02:00 UTC.
+      </Banner>
+    </Column>
+  }
+  codes={[
+    {
+      code:
+`<Banner variant="mesh" meshColors={["success", "info", "accent"]}>
+  Your workspace is ready.
+</Banner>`,
+      language: "tsx",
+      label: "Mesh colours"
+    }
+  ]}
+/>
+
+## With icons
+
+Add icons to enhance visual communication.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  previewPadding="8"
+  preview={
+    <Column fillWidth gap="8">
+      <Banner radius="s">
+        <Icon name="check" size="s" /> Claim your free credits.
+      </Banner>
+      <Row fillWidth padding="8">
+        <Background height="64" fillWidth radius="m" border="neutral-alpha-medium" lines={{display: true, angle: -45, color: "neutral-alpha-weak", size: "8", thickness: 1}}/>
+      </Row>
+    </Column>
+  }
+  codes={[
+    {
+      code:
+`<Banner radius="s">
+    <Icon name="check" size="s" />
+    Claim your free credits.
+</Banner>
+
+<Row fillWidth padding="8">
+    <Background height="64" fillWidth radius="m" border="neutral-alpha-medium" lines={{display: true, angle: -45, color: "neutral-alpha-weak", size: "8", thickness: 1}}/>
+</Row>`,
+      language: "tsx",
+      label: "Banner with icon"
+    }
+  ]}
+/>
+
+## Custom styling
+
+Customize the appearance of banners using Flex props.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  preview={
+    <Column gap="16" fillWidth>
+      <Banner radius="s" border="success-medium" background="success-weak" onBackground="success-medium">
+        <Icon name="check" size="s" />
+        Operation completed successfully.
+      </Banner>
+      <Banner radius="s" border="warning-medium" background="warning-weak" onBackground="warning-medium">
+        <Icon name="warning" size="s" />
+        Please review your information before proceeding.
+      </Banner>
+      <Banner radius="s" border="danger-medium" background="danger-weak" onBackground="danger-medium">
+        <Icon name="danger" size="s" />
+        Critical error detected in the system.
+      </Banner>
+    </Column>
+  }
+  codes={[
+    {
+      code:
+`<Banner solid="success-medium" onSolid="success-strong">
+    <Icon name="check" size="s" />
+    Operation completed successfully.
+</Banner>
+
+<Banner solid="warning-medium" onSolid="warning-strong">
+    <Icon name="warning" size="s" />
+    Please review your information before proceeding.
+</Banner>
+
+<Banner solid="danger-medium" onSolid="danger-strong">
+    <Icon name="danger" size="s" />
+    Critical error detected in the system.
+</Banner>`,
+      language: "tsx",
+      label: "Custom styled banners"
+    }
+  ]}
+/>
+
+## With actions
+
+Add interactive elements to banners.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  previewPadding="0"
+  preview={
+    <Column fillWidth>
+      <Banner horizontal="between">
+        Accept our privacy policy to continue.
+        <Row gap="8" data-theme="dark">
+          <Button size="s">Decline</Button>
+          <Button size="s" variant="secondary">Accept</Button>
+        </Row>
+      </Banner>
+      <Row fillWidth padding="8">
+        <Background height="64" fillWidth radius="m" border="neutral-alpha-medium" lines={{display: true, angle: -45, color: "neutral-alpha-weak", size: "8", thickness: 1}}/>
+      </Row>
+    </Column>
+  }
+  codes={[
+    {
+      code:
+`<Banner horizontal="between">
+    Accept our privacy policy to continue.
+    <Row gap="8" data-theme="dark">
+      <Button size="s">Decline</Button>
+      <Button size="s" variant="secondary">Accept</Button>
+    </Row>
+</Banner>`,
+      language: "tsx",
+      label: "Banner with actions"
+    }
+  ]}
+/>
+
+## API reference
+
+<PropsTable
+  component="Banner"
+  describe={{
+    variant: "solid is a flat brand strip; mesh is a soft blurred gradient wash from the theme's colour scales.",
+    meshColors: "Up to three colour scales the mesh is drawn from. Default brand, accent, brand.",
+    link: "An inline, underlined call to action after the message.",
+    dismissible: "Shows a dismiss button. Hides the banner until the next page load.",
+    dismissKey: "Remembers the dismissal in the browser under this key (implies dismissible). Use a new key per announcement.",
+    dismissLabel: "The dismiss button's accessible name.",
+  }}
+  content={[
+    ["children"],
+    ["...flex"]
+  ]}
+/>

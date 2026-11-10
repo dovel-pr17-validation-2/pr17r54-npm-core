@@ -1,0 +1,28 @@
+{
+ "name": "User",
+ "group": "components",
+ "props": {
+  "name": "string",
+  "children": "React.ReactNode",
+  "subline": "React.ReactNode",
+  "tag": "string",
+  "tagProps": "TagProps = {}",
+  "loading": "boolean = false",
+  "avatarProps": "AvatarProps = {}",
+  "className": "string"
+ },
+ "tags": [
+  "profile",
+  "chat"
+ ],
+ "pairsWith": [
+  "Avatar",
+  "Row",
+  "Text"
+ ],
+ "mixinsRef": [],
+ "types": {
+  "AvatarProps": "Avatar props",
+  "TagProps": "Tag props"
+ }
+}

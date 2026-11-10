@@ -1,0 +1,13 @@
+node_modules/
+.next/
+next-env.d.ts
+*.tsbuildinfo
+work/
+arms/once/vendor/*.tgz
+arms/stack/
+# Bench v1 screenshots live in the gallery artifact and project files, not git
+results/bench-v1/**/*.jpg
+results/bench-v1-invalid-chakra/**/*.jpg
+results/bench-v1/blind/
+results/bench-v1-blind-n1/
+results/bench-v2-brand-pilot/**/*.jpg

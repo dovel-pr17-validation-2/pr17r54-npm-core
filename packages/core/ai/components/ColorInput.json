@@ -1,0 +1,29 @@
+{
+ "name": "ColorInput",
+ "group": "components",
+ "extends": [
+  "Input"
+ ],
+ "props": {
+  "value": "!string",
+  "onChange": "!(value: string) => void",
+  "supportAlpha": "boolean = false",
+  "labels": "ColorInputLabels"
+ },
+ "tags": [
+  "form",
+  "settings"
+ ],
+ "pairsWith": [
+  "Input",
+  "Setting"
+ ],
+ "mixinsRef": [],
+ "types": {
+  "ColorInputLabels": {
+   "remove": "string",
+   "adjustOpacity": "string",
+   "opacity": "string"
+  }
+ }
+}

@@ -1,0 +1,20 @@
+{
+ "name": "Modal",
+ "group": "components",
+ "props": {
+  "children": "!React.ReactNode",
+  "backdrop": "React.ReactNode",
+  "title": "!React.ReactNode",
+  "open": "!boolean",
+  "onClose": "!() => void",
+  "closeLabel": "string = Close"
+ },
+ "tags": [
+  "overlay"
+ ],
+ "pairsWith": [
+  "Column"
+ ],
+ "avoid": "Ordinary dialogs and confirmations — use Dialog",
+ "mixinsRef": []
+}

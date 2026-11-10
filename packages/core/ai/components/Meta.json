@@ -1,0 +1,51 @@
+{
+ "name": "Meta",
+ "group": "modules",
+ "call": "Meta.generate(props)",
+ "returns": "GeneratedMetadata",
+ "props": {
+  "title": "!string",
+  "description": "!string",
+  "baseURL": "!string",
+  "path": "string = \"\"",
+  "type": "\"website\" | \"article\" = website",
+  "image": "string",
+  "publishedTime": "string",
+  "author": "{ name: string; url?: string; }",
+  "canonical": "string",
+  "robots": "string",
+  "noindex": "boolean",
+  "nofollow": "boolean",
+  "alternates": "Alternate[]",
+  "ogRoutes": "Partial<OgRoutes>"
+ },
+ "tags": [
+  "seo",
+  "next"
+ ],
+ "pairsWith": [
+  "Schema"
+ ],
+ "mixinsRef": [],
+ "types": {
+  "Alternate": {
+   "href": "!string",
+   "hrefLang": "!string"
+  },
+  "GeneratedMetadata": {
+   "metadataBase": "!URL",
+   "title": "!string",
+   "description": "!string",
+   "openGraph": "!{ title: string; description: string; type: \"website\" | \"article\"; publishedTime?: string; url: string; images: { url: string; alt: string }[]; }",
+   "twitter": "!{ card: \"summary_large_image\"; title: string; description: string; images: string[]; }",
+   "authors": "{ name: string; url?: string }[]",
+   "robots": "string",
+   "alternates": "{ canonical: string; languages: Record<string, string>; }"
+  },
+  "OgRoutes": {
+   "fetch": "!string",
+   "proxy": "!string",
+   "generate": "!string"
+  }
+ }
+}

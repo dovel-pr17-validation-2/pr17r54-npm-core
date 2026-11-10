@@ -1,0 +1,109 @@
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import path from "node:path";
+import { describe, expect, it } from "vitest";
+import spec from "../../ai/spec.json";
+
+/**
+ * In the 2.1.0-rc.0 benchmark an agent opened the 131 KB `spec.json` in 50
+ * of 60 runs, each time to look up a type a slice named but did not define,
+ * and it read the 40 KB catalog and a dozen slices one call at a time. These
+ * keep the harness an agent reads self-contained and small.
+ */
+const AI = path.join(__dirname, "..", "..", "ai");
+const read = (file: string) => JSON.parse(readFileSync(path.join(AI, file), "utf8"));
+const types = spec.types as unknown as Record<string, unknown>;
+const typeNames = (value: unknown) =>
+  [...JSON.stringify(value ?? null).matchAll(/[A-Za-z_][A-Za-z0-9_]*/g)]
+    .map(([word]) => word)
+    .filter((word) => Object.hasOwn(types, word));
+
+type Slice = { props?: unknown; returns?: unknown; types?: Record<string, unknown> };
+const slices = readdirSync(path.join(AI, "components")).map(
+  (file) => [file, read(`components/${file}`) as Slice] as const,
+);
+const index = read("tasks/index.json") as { tasks: { id: string; file: string }[] };
+
+describe("ai harness without spec.json", () => {
+  it.each(slices)("%s defines every type it names", (_, slice) => {
+    const defined = slice.types ?? {};
+    const named = typeNames([slice.props, slice.returns, Object.values(defined)]);
+    expect(named.filter((name) => !defined[name])).toEqual([]);
+  });
+
+  it("never sends an agent to spec.json from a slice, a bundle or the compact rules", () => {
+    for (const [file, slice] of slices)
+      expect([file, JSON.stringify(slice)]).not.toContain("spec.json");
+    for (const file of readdirSync(path.join(AI, "bundles"))) {
+      expect(readFileSync(path.join(AI, "bundles", file), "utf8")).not.toMatch(/see spec\.json/);
+    }
+    const rules = readFileSync(path.join(AI, "rules.compact.md"), "utf8");
+    expect(rules.match(/spec\.json/g)).toHaveLength(1);
+    expect(rules).toMatch(/Never open `spec\.json`/);
+  });
+
+  // 25,000 until 2.4; raised by 500 bytes, about 125 tokens, for the AI
+  // components (loader, working line, voice, mascot) so no existing purpose
+  // had to be cut to fit them; by 1,000 more for the six map components,
+  // each of which carries its subpath.
+  it("keeps the catalog small enough to load on every task", () => {
+    expect(statSync(path.join(AI, "catalog.json")).size).toBeLessThan(26_500);
+  });
+});
+
+describe("ai task bundles in one file", () => {
+  it.each(index.tasks.map((t) => [t.id, t.file] as const))(
+    "%s has a bundle with every slice, type and gotcha its task names",
+    (id, file) => {
+      const task = read(file) as { components: string[]; gotchas?: string[] };
+      const bundle = read(`bundles/${id}.json`) as {
+        components: Record<string, Slice>;
+        gotchas: Record<string, string>;
+        mixins: Record<string, unknown>;
+        types: Record<string, unknown>;
+      };
+      expect(Object.keys(bundle.components)).toEqual(task.components);
+      expect(Object.keys(bundle.gotchas)).toEqual(task.gotchas ?? []);
+      const named = typeNames([
+        Object.values(bundle.components).map((c) => [c.props, c.returns]),
+        Object.values(bundle.mixins),
+        Object.values(bundle.types),
+      ]);
+      expect(named.filter((name) => !bundle.types[name])).toEqual([]);
+    },
+  );
+});
+
+/**
+ * In the 2.1.0 benchmark an agent made 10 calls a run, and from the JSON
+ * bundle on it re-sent 20k–60k tokens of docs on each call to fetch one or
+ * two more files: the rules, the example, a slice the bundle lacked. The
+ * Markdown bundle is the one file an agent reads before writing.
+ */
+describe("ai task bundles as one Markdown read", () => {
+  it.each(index.tasks.map((t) => [t.id, t.file] as const))(
+    "%s carries the rules, its components, the common ones, its gotchas and its example",
+    (id, file) => {
+      const task = read(file) as { components: string[]; gotchas?: string[]; example?: string };
+      const md = readFileSync(path.join(AI, "bundles", `${id}.md`), "utf8");
+      const gotchas = read("gotchas.json") as Record<string, { rule: string; inRules?: boolean }>;
+      for (const name of [...task.components, "Button", "IconButton", "Input", "Dialog"]) {
+        if (Object.hasOwn(spec.components, name)) expect(md).toContain(`\n### ${name}`);
+      }
+      // The end of each rule: the start may point at a file the bundle replaces.
+      // A gotcha the rules already state is in the bundle once, as a rule.
+      for (const id of task.gotchas ?? []) {
+        if (gotchas[id].inRules) expect(md).not.toContain(`- ${gotchas[id].rule}`);
+        else expect(md).toContain(gotchas[id].rule.slice(-60));
+      }
+      expect(md).toContain("## Layout");
+      if (task.example) expect(md).toContain(`## Gold example (\`${task.example}\`)`);
+      expect(md).not.toMatch(/see spec\.json/);
+      expect(md.length).toBeLessThan(50_000);
+    },
+  );
+
+  it("is what AGENTS.md routes to, task by task", () => {
+    const agents = readFileSync(path.join(AI, "..", "AGENTS.md"), "utf8");
+    for (const { id } of index.tasks) expect(agents).toContain(`\`ai/bundles/${id}.md\``);
+  });
+});

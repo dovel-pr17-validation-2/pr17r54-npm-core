@@ -1,0 +1,250 @@
+---
+title: "handleOGProxy"
+summary: "Server-side utility for proxying external images to avoid CORS issues."
+updatedAt: "2026-10-10"
+docs: "once-ui/utils/handleOGProxy.mdx"
+github: "server/og-utils.ts"
+navLabel: "handleOGProxy"
+navIcon: "code"
+---
+
+The `handleOGProxy` function is a server-side utility that proxies external images through your server. This is essential for displaying Open Graph images from external sources without CORS restrictions.
+
+<Feedback marginTop="16" marginBottom="24" description="In a Next.js app, use createOgProxyRoute from @once-ui-system/core/next: a two-line route file built on this function. See OG route handlers."/>
+
+## Features
+
+- Proxies images from external URLs
+- Passes raster image types only by default (SVG is opt-in), with `nosniff` and a sandboxing CSP
+- Size limit and timeout; a larger image is refused, not truncated
+- Configurable cache control headers
+- Custom user agent support
+- Only requests public addresses: private, loopback, link-local and metadata addresses are refused in every encoding, every redirect is checked again, and the connection goes to the address that was checked
+- Domain allowlist and blocklist, plus an `isAllowed` hook for your own checks
+- Requires Node.js runtime (resolves and checks hostnames)
+- Handles errors gracefully
+
+## Basic usage
+
+Create an API route that uses the utility:
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codeHeight={20}
+  lineNumbers
+  codes={[
+    {
+      code:
+`import { NextRequest } from 'next/server';
+import { handleOGProxy } from '@once-ui-system/core/server';
+
+export const runtime = 'nodejs';
+
+export async function GET(request: NextRequest) {
+  return handleOGProxy(request);
+}`,
+      language: "tsx",
+      label: "app/api/og/proxy/route.ts"
+    }
+  ]}
+/>
+
+Then use the proxy in your client:
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codeHeight={12}
+  lineNumbers
+  codes={[
+    {
+      code:
+`const imageUrl = 'https://external-site.com/image.jpg';
+const proxiedUrl = \`/api/og/proxy?url=\${encodeURIComponent(imageUrl)}\`;
+
+<img src={proxiedUrl} alt="External image" />`,
+      language: "tsx",
+      label: "Component.tsx"
+    }
+  ]}
+/>
+
+## With options
+
+Customize cache duration and user agent:
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codeHeight={20}
+  lineNumbers
+  codes={[
+    {
+      code:
+`import { NextRequest } from 'next/server';
+import { handleOGProxy } from '@once-ui-system/core/server';
+
+export async function GET(request: NextRequest) {
+  return handleOGProxy(request, {
+    userAgent: 'Mozilla/5.0 (compatible; ImageProxy/1.0)',
+    cacheMaxAge: 86400,
+    allowedDomains: ['example.com', 'once-ui.com'],
+  });
+}`,
+      language: "tsx",
+      label: "app/api/og/proxy/route.ts"
+    }
+  ]}
+/>
+
+## Why use a proxy?
+
+External images often have CORS restrictions that prevent direct usage in web applications. By proxying images through your server:
+
+- **Bypass CORS**: Your server fetches the image and serves it from your domain
+- **Caching**: Reduce external requests with configurable cache headers
+- **Privacy**: Hide the original image URL from client-side code
+- **Reliability**: Handle external failures gracefully
+
+## API Reference
+
+<PropsTable
+  content={[
+    ["request", "Request", "-"],
+    ["options", "OGProxyOptions", "-"],
+    ["options.userAgent", "string", "'Mozilla/5.0 (compatible; OG-Proxy/1.0)'", "User agent string for the fetch request."],
+    ["options.cacheMaxAge", "number", "3600", "Cache duration in seconds (1 hour)."],
+    ["options.cacheControl", "string", "—", "Full Cache-Control for successful responses; overrides cacheMaxAge."],
+    ["options.timeout", "number", "10000", "Milliseconds for the whole exchange: DNS, connection, redirects and body."],
+    ["options.maxBytes", "number", "5 MiB", "Largest image, after decompression."],
+    ["options.allowedContentTypes", "readonly string[]", "DEFAULT_OG_IMAGE_TYPES", "Image types passed through; image/* matches any image type."],
+    ["options.maxRedirects", "number", "3", "Redirects followed, each checked like the first URL."],
+    ["options.allowedDomains", "string[]", "—", "When set, only these domains (and their subdomains) are permitted."],
+    ["options.blockedDomains", "string[]", "—", "These domains (and their subdomains) are refused."],
+    ["options.isAllowed", "(url: URL) => boolean | Promise<boolean>", "—", "Called for every URL and redirect target after the built-in checks; return false to refuse."],
+    ["options.allowHttp", "boolean", "false", "Also fetch plain http: URLs."],
+    ["options.sameOrigin", "boolean", "false", "Refuse requests whose Origin or Referer names another host."]
+  ]}
+/>
+
+## Response
+
+The function returns the image binary data with appropriate headers:
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codeHeight={16}
+  lineNumbers
+  codes={[
+    {
+      code:
+`// Response headers
+{
+  'Content-Type': 'image/jpeg',  // The upstream type, if allowed
+  'Cache-Control': 'public, max-age=3600',
+  'X-Content-Type-Options': 'nosniff',
+  'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; sandbox"
+}`,
+      language: "tsx",
+      label: "Response headers"
+    }
+  ]}
+/>
+
+## Error handling
+
+The function returns appropriate error responses:
+
+- **400**: Missing URL parameter or URL failed validation (blocked domain, private IP, etc.)
+- **413**: The image is larger than `maxBytes`
+- **415**: Not an allowed image type
+- **502**: The upstream failed (too many redirects, a dropped connection)
+- **504**: The upstream did not finish within `timeout`
+- **500**: Not running on the Node.js runtime
+- **Original status**: If the external server returns an error, that status is forwarded
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codeHeight={12}
+  lineNumbers
+  codes={[
+    {
+      code:
+`{
+  "error": "Failed to fetch image"
+}`,
+      language: "json",
+      label: "Error response"
+    }
+  ]}
+/>
+
+## Use with useOgData hook
+
+The `useOgData` hook automatically uses the proxy for external images:
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codeHeight={24}
+  lineNumbers
+  codes={[
+    {
+      code:
+`import { useOgData } from '@once-ui-system/core';
+
+function MyComponent() {
+  const { ogData, loading } = useOgData(
+    'https://example.com',
+    '/api/og/fetch',
+    '/api/og/proxy'  // Custom proxy endpoint
+  );
+
+  return (
+    <div>
+      {ogData?.image && (
+        <img src={ogData.image} alt={ogData.title} />
+      )}
+    </div>
+  );
+}`,
+      language: "tsx",
+      label: "Component.tsx"
+    }
+  ]}
+/>
+
+## Security considerations
+
+Both `handleOGFetch` and `handleOGProxy` validate URLs server-side before fetching:
+
+- Only **HTTPS** URLs are allowed (plain HTTP with `allowHttp`)
+- **Non-public addresses** are blocked in every form the URL parser accepts: private, loopback, link-local, unique-local, carrier-grade NAT, multicast, cloud metadata, and IPv4 inside IPv6
+- Internal hostnames (`localhost`, `*.local`, `*.internal`, single-label names) are blocked
+- Every address a hostname resolves to must be public, and the connection goes to the address that was checked, so a DNS answer that changes in between has nothing to slip through
+- Embedded credentials in URLs are rejected
+- Redirect chains are followed by hand and every hop is checked again (up to 3 redirects)
+
+Use `allowedDomains` to restrict fetching to trusted hosts in production:
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codeHeight={16}
+  lineNumbers
+  codes={[
+    {
+      code:
+`return handleOGProxy(request, {
+  allowedDomains: ['example.com', 'cdn.example.com'],
+});`,
+      language: "tsx",
+      label: "Domain allowlist"
+    }
+  ]}
+/>
+
+Consider also adding rate limiting at the route level to prevent abuse.

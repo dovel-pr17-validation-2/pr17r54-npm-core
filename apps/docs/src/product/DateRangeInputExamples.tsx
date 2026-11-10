@@ -1,0 +1,58 @@
+"use client";
+
+import React from "react";
+import { useRangeFromToday } from "./useNow";
+import { DateRangeInput, DateRange, Flex, Column, type FieldSize } from "@once-ui-system/core";
+
+// Basic DateRangeInput example with managed state
+export function BasicDateRangeInputExample({ size }: { size?: FieldSize } = {}) {
+  const [dateRange, setDateRange] = useRangeFromToday(7);
+  
+  const handleDateRangeChange = (newRange: DateRange) => {
+    setDateRange(newRange);
+  };
+  
+  return (
+    <Flex fillWidth padding="16" height={25} horizontal="center" vertical="start">
+      <DateRangeInput
+        id={size ? `basic-date-range-example-${size}` : "basic-date-range-example"}
+        size={size}
+        startLabel="Start"
+        endLabel="End"
+        value={dateRange}
+        onChange={handleDateRangeChange}
+      />
+    </Flex>
+  );
+}
+
+// DateRangeInput with custom labels
+export function CustomLabelDateRangeInputExample() {
+  const [dateRange, setDateRange] = useRangeFromToday(14);
+  
+  const handleDateRangeChange = (newRange: DateRange) => {
+    setDateRange(newRange);
+  };
+  
+  return (
+    <Flex padding="16">
+      <DateRangeInput
+        id="custom-label-date-range-example"
+        startLabel="Check-in"
+        endLabel="Check-out"
+        value={dateRange}
+        onChange={handleDateRangeChange}
+      />
+    </Flex>
+  );
+}
+
+// Component that combines all examples
+export function DateRangeInputExamples() {
+  return (
+    <Column gap="32">
+      <BasicDateRangeInputExample />
+      <CustomLabelDateRangeInputExample />
+    </Column>
+  );
+}

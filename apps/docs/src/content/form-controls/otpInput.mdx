@@ -1,0 +1,80 @@
+---
+title: "OTPInput"
+summary: "One field per digit for verification codes, with paste, keyboard navigation and a completion callback."
+updatedAt: "2026-09-14"
+docs: "once-ui/form-controls/otpInput.mdx"
+github: "components/OTPInput.tsx"
+navLabel: "OTPInput"
+navIcon: "switch"
+---
+
+`OTPInput` collects a one-time code as separate boxes rather than one field. It
+moves focus as digits are typed, accepts a pasted code into all boxes at once,
+and calls `onComplete` the moment the last one is filled.
+
+Unlike the other inputs here it does not extend [Input](/form-controls/input) —
+it is a group of fields, not one, so it has its own small surface.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  preview={<OTPInputExample autoFocus={false} />}
+  codes={[
+    {
+      code:
+`const { addToast } = useToast();
+
+const handleComplete = (code: string) => {
+    addToast({ variant: "success", message: "Submitted " + code });
+};
+
+<OTPInput
+    id="verification-code"
+    length={6}
+    onComplete={handleComplete}
+    autoFocus
+/>`,
+      language: "tsx",
+      label: "OTPInput"
+    }
+  ]}
+/>
+
+## Screen readers and autofill
+
+The boxes are one group, named "One-time code", and each box says which digit it is ("OTP digit 2 of 6"). The first box asks the browser for a code from a text message (`autocomplete="one-time-code"`), and a whole code arriving at once, by autofill or paste, fills every box. With `error`, every box is invalid and described by `errorMessage`. Name the group with `aria-label`, or translate both names with `labels`.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  preview={<OTPInputLabelsExample />}
+  codes={[
+    {
+      code:
+`<OTPInput
+    length={6}
+    labels={{
+      group: "Code de vérification",
+      digit: (n, of) => \`Chiffre \${n} sur \${of}\`,
+    }}
+/>`,
+      language: "tsx",
+      label: "Translated"
+    }
+  ]}
+/>
+
+## API reference
+
+<PropsTable
+  component="OTPInput"
+  describe={{
+    labels: "The group's and the boxes' accessible names, to translate them.",
+    length: "How many digits, and so how many boxes.",
+    onComplete: "Called with the full code once the last box is filled.",
+    error: "Put the group in its error state.",
+    errorMessage: "Message shown under the boxes when error is set.",
+    disabled: "Block input across every box.",
+    autoFocus: "Focus the first box on mount. Leave it off if the code is not the first thing on the page.",
+  }}
+/>

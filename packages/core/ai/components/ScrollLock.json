@@ -1,0 +1,16 @@
+{
+ "name": "ScrollLock",
+ "group": "components",
+ "props": {
+  "enabled": "!boolean",
+  "allowScrollInElement": "RefObject<HTMLElement | null>"
+ },
+ "tags": [
+  "utility",
+  "overlay"
+ ],
+ "pairsWith": [
+  "FocusTrap"
+ ],
+ "mixinsRef": []
+}

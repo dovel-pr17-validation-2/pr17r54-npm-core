@@ -1,0 +1,23 @@
+{
+ "name": "Toast",
+ "group": "components",
+ "props": {
+  "className": "string",
+  "variant": "!\"success\" | \"danger\" | \"warning\" | \"info\"",
+  "showIcon": "boolean = true",
+  "onClose": "() => void",
+  "action": "React.ReactNode",
+  "children": "!React.ReactNode",
+  "duration": "number = 6000",
+  "announce": "boolean = true"
+ },
+ "tags": [
+  "feedback"
+ ],
+ "pairsWith": [
+  "Toaster",
+  "useToast"
+ ],
+ "avoid": "Rendering it directly — call addToast from useToast",
+ "mixinsRef": []
+}

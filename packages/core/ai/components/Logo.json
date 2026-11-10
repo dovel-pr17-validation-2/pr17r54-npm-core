@@ -1,0 +1,39 @@
+{
+ "name": "Logo",
+ "group": "components",
+ "props": {
+  "className": "string",
+  "size": "TShirtSizes = m",
+  "style": "React.CSSProperties",
+  "icon": "LogoSource",
+  "wordmark": "LogoSource",
+  "text": "string",
+  "monogram": "boolean | string",
+  "href": "string",
+  "dark": "boolean",
+  "light": "boolean",
+  "brand": "{ copy?: boolean; url?: string }"
+ },
+ "tags": [
+  "media",
+  "navigation"
+ ],
+ "pairsWith": [
+  "SmartLink",
+  "Row"
+ ],
+ "mixinsRef": [],
+ "types": {
+  "LogoSource": [
+   "string",
+   "{ light: string; dark: string; }"
+  ],
+  "TShirtSizes": [
+   "xl",
+   "l",
+   "m",
+   "s",
+   "xs"
+  ]
+ }
+}

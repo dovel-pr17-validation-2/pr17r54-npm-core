@@ -1,0 +1,25 @@
+{
+ "name": "NumberInput",
+ "group": "components",
+ "extends": [
+  "Input"
+ ],
+ "props": {
+  "value": "number",
+  "defaultValue": "number | string",
+  "onChange": "(value: number) => void",
+  "min": "number",
+  "max": "number",
+  "step": "number = 1",
+  "padStart": "number"
+ },
+ "tags": [
+  "form",
+  "settings"
+ ],
+ "pairsWith": [
+  "Input",
+  "Setting"
+ ],
+ "mixinsRef": []
+}

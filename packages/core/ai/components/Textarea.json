@@ -1,0 +1,45 @@
+{
+ "name": "Textarea",
+ "group": "components",
+ "props": {
+  "id": "!string",
+  "label": "string",
+  "placeholder": "string",
+  "lines": "number | \"auto\" = auto",
+  "size": "FieldSize",
+  "error": "boolean = false",
+  "errorMessage": "ReactNode",
+  "description": "ReactNode",
+  "corners": "\"none\" | \"top\" | \"right\" | \"bottom\" | \"left\" | \"top-left\" | \"top-right\" | \"bottom-right\" | \"bottom-left\"",
+  "className": "string",
+  "prefix": "ReactNode",
+  "suffix": "ReactNode",
+  "variant": "\"default\" | \"ghost\" = default",
+  "focusRing": "boolean = false",
+  "characterCount": "boolean",
+  "resize": "\"horizontal\" | \"vertical\" | \"both\" | \"none\" = vertical",
+  "validate": "(value: ReactNode) => ReactNode | null",
+  "disabled": "boolean = false",
+  "span": "number"
+ },
+ "tags": [
+  "form",
+  "feedback"
+ ],
+ "pairsWith": [
+  "Dialog",
+  "Column",
+  "Chip"
+ ],
+ "mixinsRef": [],
+ "types": {
+  "FieldSize": [
+   "xl",
+   "l",
+   "m",
+   "s",
+   "xs",
+   "xxs"
+  ]
+ }
+}

@@ -1,0 +1,16 @@
+{
+ "name": "MdxHeadingAnchor",
+ "group": "mdx",
+ "importFrom": "@once-ui-system/core/mdx",
+ "extends": [
+  "HeadingAnchor"
+ ],
+ "tags": [
+  "mdx",
+  "docs"
+ ],
+ "pairsWith": [
+  "MdxHeading"
+ ],
+ "mixinsRef": []
+}

@@ -1,0 +1,50 @@
+{
+ "name": "MdxCodeBlock",
+ "group": "mdx",
+ "importFrom": "@once-ui-system/core/mdx",
+ "props": {
+  "margin": "SpacingToken | number | \"auto\"",
+  "marginLeft": "SpacingToken | number | \"auto\"",
+  "marginRight": "SpacingToken | number | \"auto\"",
+  "marginTop": "SpacingToken | number | \"auto\"",
+  "marginBottom": "SpacingToken | number | \"auto\"",
+  "marginX": "SpacingToken | number | \"auto\"",
+  "marginY": "SpacingToken | number | \"auto\""
+ },
+ "tags": [
+  "mdx",
+  "docs"
+ ],
+ "pairsWith": [
+  "MdxInlineCode"
+ ],
+ "mixinsRef": [],
+ "types": {
+  "SpacingToken": [
+   "xl",
+   "l",
+   "m",
+   "s",
+   "xs",
+   "0",
+   "1",
+   "2",
+   "4",
+   "8",
+   "12",
+   "32",
+   "64",
+   "160",
+   "16",
+   "20",
+   "24",
+   "40",
+   "48",
+   "56",
+   "72",
+   "80",
+   "104",
+   "128"
+  ]
+ }
+}

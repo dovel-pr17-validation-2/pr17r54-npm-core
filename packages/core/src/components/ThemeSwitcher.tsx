@@ -1,0 +1,253 @@
+"use client";
+
+import classNames from "clsx";
+import React, { forwardRef } from "react";
+import { type Theme, useTheme } from "../contexts/ThemeProvider";
+import { mergeLabels } from "../internal/labels";
+import { radioGroupKeyDown } from "../internal/radioKeys";
+import { Column } from "./Column";
+import { IconButton } from "./IconButton";
+import { Row } from "./Row";
+import styles from "./ThemeSwitcher.module.scss";
+
+const THEMES = [
+  { value: "system", icon: "computer" },
+  { value: "dark", icon: "dark" },
+  { value: "light", icon: "light" },
+] as const;
+
+/** Each option's accessible name. Omitted fields keep the English default. */
+interface ThemeSwitcherLabels {
+  /** Defaults to `"System theme"`. */
+  system?: string;
+  /** Defaults to `"Dark theme"`. */
+  dark?: string;
+  /** Defaults to `"Light theme"`. */
+  light?: string;
+}
+
+const DEFAULT_LABELS: Required<ThemeSwitcherLabels> = {
+  system: "System theme",
+  dark: "Dark theme",
+  light: "Light theme",
+};
+
+interface ThemeSwitcherProps extends Omit<React.ComponentProps<typeof Row>, "onChange"> {
+  /**
+   * The theme to show as active, when the host owns the state. Pair with
+   * `onChange`. The switcher then never sets the theme or stores it, which is
+   * what an editor previewing someone else's theme needs.
+   */
+  value?: Theme;
+  /** Called with the chosen theme. Without `value`, after it has been set. */
+  onChange?: (theme: Theme) => void;
+  /**
+   * Show only the active theme, and reveal the rest on hover or focus.
+   *
+   * For places where the control has to be reachable but should not spend three
+   * slots of a header on itself. It stays a real toggle group: every option
+   * keeps its tab stop, focus opens the group, and a device that cannot hover
+   * gets all three from the start rather than a button that changes the theme
+   * when it was tapped to open something.
+   */
+  collapsed?: boolean;
+  /**
+   * Which way a collapsed group opens. Ignored when not `collapsed`.
+   *
+   * `"row"` grows sideways in the flow of the layout, which is right when the
+   * control has room beside it and wrong when it has neighbours: the group
+   * widening pushes them along, and the option you were pointing at moves out
+   * from under the pointer.
+   *
+   * `"column"` lifts the options into a panel over the page and opens it
+   * downwards, so the control keeps a one-option footprint whatever it is
+   * doing and nothing around it moves. Downwards rather than centred on the
+   * active option: the open panel is taller than a typical header, so
+   * anchoring it on the second or third option would put its top edge above
+   * the viewport.
+   */
+  direction?: "row" | "column";
+  /**
+   * The options' accessible names, for a translated interface. Omitted
+   * fields keep the English: "System theme", "Dark theme", "Light theme".
+   */
+  labels?: ThemeSwitcherLabels;
+  /**
+   * What the options are to assistive technology. `"toggle"` (the default)
+   * is a group of toggle buttons, the active one pressed, each its own tab
+   * stop. `"radio"` is a `radiogroup` of `radio`s, for a settings form: one
+   * tab stop, on the active theme, and the arrows move and choose. Name it
+   * with `aria-label` or `aria-labelledby`.
+   */
+  semantics?: "toggle" | "radio";
+}
+
+const ThemeSwitcher = forwardRef<HTMLDivElement, ThemeSwitcherProps>(
+  (
+    {
+      collapsed,
+      direction = "row",
+      labels,
+      value,
+      onChange,
+      semantics = "toggle",
+      className,
+      ...flex
+    },
+    ref,
+  ) => {
+    const { theme: providerTheme, setTheme } = useTheme();
+    const controlled = value !== undefined;
+    const theme = controlled ? value : providerTheme;
+    const names = mergeLabels(DEFAULT_LABELS, labels);
+    const [mounted, setMounted] = React.useState(false);
+    // Two frames after `mounted` has committed, so a collapsed group appears
+    // only once the browser has laid it out showing the right option (see
+    // `.pending`). One frame is not enough: its callback runs before that
+    // frame's style pass, which would see the new classes and the reveal
+    // together and animate the swap.
+    const [ready, setReady] = React.useState(false);
+
+    // The server does not know the visitor's theme, so nothing is marked active
+    // until the client says which one it is. A host's value is known on both.
+    React.useEffect(() => {
+      setMounted(true);
+    }, []);
+    const known = mounted || controlled;
+
+    React.useEffect(() => {
+      if (!mounted) return;
+      let frame = requestAnimationFrame(() => {
+        frame = requestAnimationFrame(() => setReady(true));
+      });
+      return () => cancelAnimationFrame(frame);
+    }, [mounted]);
+
+    const pending = collapsed && !ready;
+
+    /*
+     * Opening downwards, the active option leads.
+     *
+     * The shut control is the active option — that is what a collapsed group
+     * is. Open it in fixed order and the panel's first slot belongs to
+     * whichever theme happens to be listed first, so the icon the pointer is
+     * already resting on changes identity as the panel unrolls: you hover the
+     * moon and the computer arrives underneath your cursor. Click without
+     * looking and you have set the wrong theme.
+     *
+     * Leading with the active option keeps one invariant instead — the theme
+     * in force is always the one in the anchor slot, before opening and again
+     * after choosing. The other two keep their order relative to each other,
+     * so the list is still predictable.
+     *
+     * Reordered here rather than with CSS `order` so that the tab order and
+     * the visual order stay the same thing. Keys are stable, so React moves
+     * the existing nodes and a focused button keeps its focus.
+     */
+    const ordered =
+      collapsed && direction === "column" && known
+        ? [...THEMES].sort((a, b) => Number(theme === b.value) - Number(theme === a.value))
+        : THEMES;
+
+    const choose = (next: Theme) => {
+      if (!controlled) setTheme(next);
+      onChange?.(next);
+    };
+
+    const radio = semantics === "radio";
+    // A radio group's one tab stop: the active theme, or the first option
+    // until the active one is known.
+    const anyActive = known && THEMES.some(({ value: option }) => option === theme);
+    const group = radio ? { role: "radiogroup", onKeyDown: radioGroupKeyDown } : {};
+
+    const options = ordered.map(({ value: option, icon }, index) => {
+      const active = known && theme === option;
+      const state = radio
+        ? {
+            role: "radio",
+            "aria-checked": active,
+            tabIndex: (anyActive ? active : index === 0) ? 0 : -1,
+          }
+        : { "aria-pressed": active };
+      return (
+        <Row
+          key={option}
+          fit
+          // Before mount no option is known to be active, so a collapsed group
+          // keeps just its first slot open: the one-option footprint it will
+          // have, held invisible by `.pending` until the right option is in it.
+          className={classNames(styles.option, (known ? !active : index > 0) && styles.inactive)}
+          suppressHydrationWarning
+        >
+          <IconButton
+            icon={icon}
+            variant={active ? "primary" : "tertiary"}
+            onClick={() => choose(option)}
+            aria-label={names[option]}
+            {...state}
+            suppressHydrationWarning
+          />
+        </Row>
+      );
+    });
+
+    /*
+     * Opening downwards needs two elements, not one.
+     *
+     * The outer box is what the layout sees, and it stays the size of a single
+     * option however many are showing — that is the whole point of the
+     * collapsed control, and a group that grows in the flow would push its
+     * neighbours along every time it opened. The panel is taken out of the
+     * flow and hung from the outer box's top-left, so it grows over the page
+     * instead of through the header.
+     *
+     * The border and the radius move to the panel with the options, because
+     * they belong to the thing that is actually visible.
+     */
+    if (collapsed && direction === "column") {
+      return (
+        <Row
+          data-border="rounded"
+          ref={ref}
+          fit
+          className={classNames(styles.anchor, pending && styles.pending, className)}
+          suppressHydrationWarning
+          {...group}
+          {...flex}
+        >
+          <Column
+            gap="2"
+            border
+            radius="full"
+            background="page"
+            className={classNames(styles.collapsed, styles.panel)}
+            suppressHydrationWarning
+          >
+            {options}
+          </Column>
+        </Row>
+      );
+    }
+
+    return (
+      <Row
+        data-border="rounded"
+        ref={ref}
+        gap="2"
+        border
+        radius="full"
+        suppressHydrationWarning
+        className={classNames(collapsed && styles.collapsed, pending && styles.pending, className)}
+        {...group}
+        {...flex}
+      >
+        {options}
+      </Row>
+    );
+  },
+);
+
+ThemeSwitcher.displayName = "ThemeSwitcher";
+
+export type { ThemeSwitcherLabels };
+export { ThemeSwitcher };

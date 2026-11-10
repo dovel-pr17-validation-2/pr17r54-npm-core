@@ -1,0 +1,123 @@
+.statusIndicator {
+    &.s {
+        width: var(--static-space-4);
+        height: var(--static-space-4);
+    }
+
+    &.m {
+        width: var(--static-space-8);
+        height: var(--static-space-8);
+    }
+
+    &.l {
+        width: var(--static-space-16);
+        height: var(--static-space-16);
+    }
+
+    &.gray {
+        background-color: var(--scheme-gray-700);
+    }
+
+    &.blue {
+        background-color: var(--scheme-blue-700);
+    }
+
+    &.indigo {
+        background-color: var(--scheme-indigo-700);
+    }
+
+    &.violet {
+        background-color: var(--scheme-violet-700);
+    }
+
+    &.magenta {
+        background-color: var(--scheme-magenta-700);
+    }
+
+    &.pink {
+        background-color: var(--scheme-pink-700);
+    }
+
+    &.red {
+        background-color: var(--scheme-red-700);
+    }
+
+    &.orange {
+        background-color: var(--scheme-orange-700);
+    }
+
+    &.yellow {
+        background-color: var(--scheme-yellow-700);
+    }
+
+    &.moss {
+        background-color: var(--scheme-moss-700);
+    }
+
+    &.green {
+        background-color: var(--scheme-green-700);
+    }
+
+    &.emerald {
+        background-color: var(--scheme-emerald-700);
+    }
+
+    &.aqua {
+        background-color: var(--scheme-aqua-700);
+    }
+
+    &.cyan {
+        background-color: var(--scheme-cyan-700);
+    }
+
+    &.rose {
+        background-color: var(--scheme-rose-700);
+    }
+
+    &.mint {
+        background-color: var(--scheme-mint-700);
+    }
+
+    &.dusk {
+        background-color: var(--scheme-dusk-700);
+    }
+
+    &.sand {
+        background-color: var(--scheme-sand-700);
+    }
+
+    &.slate {
+        background-color: var(--scheme-slate-700);
+    }
+
+    // Roles: the 700 step of whichever scheme the theme assigns, the same step
+    // the palette names above use.
+
+    &.neutral {
+        background-color: var(--function-neutral-700);
+    }
+
+    &.brand {
+        background-color: var(--function-brand-700);
+    }
+
+    &.accent {
+        background-color: var(--function-accent-700);
+    }
+
+    &.info {
+        background-color: var(--function-info-700);
+    }
+
+    &.danger {
+        background-color: var(--function-danger-700);
+    }
+
+    &.warning {
+        background-color: var(--function-warning-700);
+    }
+
+    &.success {
+        background-color: var(--function-success-700);
+    }
+}

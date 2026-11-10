@@ -1,0 +1,27 @@
+{
+  "title": "Form controls",
+  "order": 5,
+  "pages": {
+    "input": 1,
+    "textarea": 2,
+    "select": 3,
+    "checkbox": 4,
+    "switch": 5,
+    "radioButton": 6,
+    "radioGroup": 7,
+    "chip": 8,
+    "slider": 9,
+    "rangeSlider": 10,
+    "numberInput": 11,
+    "passwordInput": 12,
+    "searchInput": 13,
+    "otpInput": 14,
+    "form": 15,
+    "field": 16,
+    "fieldset": 17,
+    "submitButton": 18,
+    "formErrorSummary": 19,
+    "datePicker": 20,
+    "dateInput": 21
+  }
+}

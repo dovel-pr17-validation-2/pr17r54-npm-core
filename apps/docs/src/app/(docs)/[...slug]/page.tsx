@@ -1,0 +1,223 @@
+import { notFound } from "next/navigation";
+import { getPages, getAdjacentPages } from "@/app/utils/utils";
+import { formatDate } from "@/app/utils/formatDate";
+import { Column, Heading, Icon, Row, Media, Text, Card, HeadingNav, Meta, Schema, Button, SmartLink, Line } from "@once-ui-system/core";
+import { baseURL, layout, schema } from "@/resources";
+import { CustomMDX } from "@/product/mdx";
+import { CopyPage } from "@/product/CopyPage";
+import { AvailabilityNotice } from "@/product/AvailabilityNotice";
+import { availabilityOf } from "@/product/published";
+import { VersionNotice } from "@/product/VersionNotice";
+import { platformOfSlug } from "@/resources/platforms";
+import { currentVersion } from "@/resources/versions";
+import { Metadata } from "next";
+
+// Release marks come from npm; see product/published.ts.
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  const docs = await getPages();
+  
+  return docs.map((doc) => ({
+    slug: doc.slug.split('/'),
+  }));
+}
+
+/** What a web reference page documents, by its top-level section, for its title. */
+const SEARCH_KIND: Record<string, string> = {
+  components: "React component",
+  "form-controls": "React form component",
+  data: "React chart component",
+  effects: "React effect component",
+  modules: "React module",
+  hooks: "React hook",
+  contexts: "React provider",
+};
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string[] }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const slugPath = slug ? slug.join('/') : '';
+
+  const docs = await getPages();
+  const doc = docs.find((doc) => doc.slug === slugPath);
+
+  if (!doc) return {};
+
+  // Web and React Native pages share names (Button, Avatar…); the platform in
+  // the title keeps them from competing as duplicates. Web reference pages
+  // named after one export also say what it is, the way people search for it.
+  const platform = platformOfSlug(doc.slug);
+  const isExport = /^[A-Za-z]\w*$/.test(doc.metadata.title) && doc.metadata.title !== "Setup";
+  const kind = isExport ? SEARCH_KIND[slug[0]] : undefined;
+  const titleBase =
+    platform.id === "native"
+      ? `${doc.metadata.title} for ${platform.label}`
+      : kind
+        ? `${doc.metadata.title}: ${kind}`
+        : doc.metadata.title;
+
+  const metadata = Meta.generate({
+    title: titleBase + " – " + schema.name,
+    description: doc.metadata.summary,
+    baseURL,
+    path: `/${doc.slug}`,
+    type: "article",
+    publishedTime: doc.metadata.updatedAt,
+    image: doc.metadata.image || `/api/og/generate?title=${encodeURIComponent(doc.metadata.title)}${slug.length > 1 ? `&section=${encodeURIComponent(slug[0])}` : ""}`,
+  });
+
+  // Meta.generate writes a canonical only alongside language alternates.
+  return { ...metadata, alternates: { canonical: metadata.openGraph.url } };
+}
+
+export default async function Docs({
+  params,
+}: { params: Promise<{ slug: string[] }> }) {
+  const { slug } = await params;
+  const slugPath = slug.join('/');
+
+  let doc = getPages().find((doc) => doc.slug === slugPath);
+
+  if (!doc) {
+    notFound();
+  }
+  
+  const status = await availabilityOf({
+    slug: doc.slug,
+    title: doc.metadata.title,
+    exportName: doc.metadata.exportName,
+  });
+
+  const { prevPage, nextPage } = getAdjacentPages(slugPath, 'section');
+  
+  const titleCase = (segment: string) =>
+    segment
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+
+  // Determine section title - use "Docs" for top-level elements. A platform's
+  // folder is that platform's root, so its pages are titled by the platform
+  // (or by their section inside it), not by the folder name.
+  const platform = platformOfSlug(slugPath);
+  const sectionTitle = platform.root
+    ? slug.length > 2 ? titleCase(slug[1]) : platform.label
+    : slug.length === 1 && !slug[0].includes('/')
+      ? "Docs"
+      : titleCase(slug[0]);
+  
+  return (
+    <>
+      <Row fillWidth horizontal="center" padding="l">
+        <Column as="main" id="main-content" maxWidth={60} horizontal="center" gap="l" paddingBottom="xl" paddingTop="12">
+          <Schema
+            as="techArticle"
+            title={doc.metadata.title + " – " + schema.name}
+            description={doc.metadata.summary}
+            baseURL={baseURL}
+            path={`/${doc.slug}`}
+            datePublished={doc.metadata.updatedAt}
+            dateModified={doc.metadata.updatedAt}
+            image={doc.metadata.image}
+            author={{
+              name: schema.name
+            }}
+          />
+          <Column maxWidth={layout.content.width} gap="8" vertical="center">
+            <Text variant="label-default-l" onBackground="neutral-medium">{sectionTitle}</Text>
+            <Heading variant="display-strong-s">{doc.metadata.title}</Heading>
+            <Text variant="body-default-s" onBackground="neutral-weak">
+              Updated: {formatDate(doc.metadata.updatedAt)}
+            </Text>
+            <Row marginTop="20" gap="8" vertical="center" wrap>
+              {doc.metadata.github && (
+                <Button href={`https://github.com/once-ui-system/core/blob/${currentVersion.branch}/` + (doc.metadata.github.startsWith("packages/") ? doc.metadata.github : `packages/core/src/${doc.metadata.github}`)} size="s" variant="secondary" prefixIcon="github" weight="default" data-border="rounded">
+                  View on GitHub
+                </Button>
+              )}
+              <CopyPage path={`/${doc.slug}`} />
+            </Row>
+            <VersionNotice path={`/${doc.slug}`} />
+            {status && <AvailabilityNotice status={status} />}
+          </Column>
+          {doc.metadata.image && (
+            <Media marginY="24" border enlarge src={doc.metadata.image} alt={"Thumbnail of " + doc.metadata.title} aspectRatio="16 / 9" radius="m" sizes={768} priority />
+          )}
+          <Column as="article" maxWidth={layout.content.width}>
+            <CustomMDX source={doc.content} />
+          </Column>
+          
+          <Row gap="16" maxWidth={layout.content.width} horizontal="between" s={{direction: "column"}}>              
+            {prevPage ? (
+              <Row fillWidth>
+              <Row maxWidth={20}>
+              <Card
+                fillWidth
+                border="neutral-alpha-medium"
+                vertical="center" gap="4"
+                href={`/${prevPage.slug}`} 
+                radius="l" 
+                paddingX="16"
+              >
+                <Icon name="chevronLeft" size="s" onBackground="neutral-weak" />
+                <Column gap="4" vertical="center" paddingX="16" paddingY="12">
+                  <Text variant="label-default-s" onBackground="neutral-weak">
+                    {prevPage.slug.includes('/') ? 
+                      `${prevPage.slug.split('/')[0].split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}` : 
+                      'page'}
+                  </Text>
+                  <Text onBackground="neutral-strong" variant="heading-strong-m" wrap="balance">
+                    {prevPage.metadata.title}
+                  </Text>
+                </Column>
+              </Card>
+              </Row>
+              </Row>
+            ) : <Row/>}
+            {nextPage ? (
+              <Row fillWidth horizontal="end">
+                <Row maxWidth={20}>
+                  <Card
+                    fillWidth
+                    border="neutral-alpha-medium"
+                    horizontal="end" vertical="center" gap="4"
+                    href={`/${nextPage.slug}`} 
+                    radius="l" 
+                    paddingX="16"
+                  >
+                    <Column horizontal="end" gap="4" vertical="center" paddingX="16" paddingY="12">
+                      <Text variant="label-default-s" onBackground="neutral-weak">
+                        {nextPage.slug.includes('/') ? 
+                          `${nextPage.slug.split('/')[0].split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}` : 
+                          'page'}
+                      </Text>
+                      <Text onBackground="neutral-strong" variant="heading-strong-m" wrap="balance">
+                        {nextPage.metadata.title}
+                      </Text>
+                    </Column>
+                    <Icon name="chevronRight" size="s" onBackground="neutral-weak" />
+                  </Card>
+                </Row>
+              </Row>
+            ) : <Row/>}
+          </Row>
+          {doc.metadata.docs && (
+            <Column maxWidth={layout.content.width} gap="24" marginTop="40">
+              <Line width="40"/>
+              <Row fillWidth vertical="center" gap="8" onBackground="neutral-weak" textVariant="label-default-s">
+                Edit this page on <SmartLink prefixIcon="github" href={`https://github.com/once-ui-system/core/tree/${currentVersion.branch}/apps/docs/src/content/` + doc.metadata.docs}>GitHub</SmartLink>
+              </Row>
+            </Column>
+          )}
+        </Column>
+      </Row>
+      <Row as="aside" aria-label="On this page" fillHeight maxWidth={layout.sideNav.width} s={{hide: true}} padding="20">
+        <HeadingNav fillWidth top="80" />
+      </Row>
+    </>
+  );
+}

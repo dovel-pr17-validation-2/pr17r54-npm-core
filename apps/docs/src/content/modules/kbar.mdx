@@ -1,0 +1,225 @@
+---
+title: "Kbar"
+summary: "The Kbar component provides a command palette for quick navigation and actions throughout your application using keyboard shortcuts."
+updatedAt: "2026-10-18"
+docs: "once-ui/modules/kbar.mdx"
+github: "modules/navigation/Kbar.tsx"
+navLabel: "Kbar"
+navIcon: "modules"
+navTag: "Update"
+navTagVariant: "success"
+---
+
+The `Kbar` component provides a powerful command palette for your application, allowing users to quickly navigate and perform actions using keyboard shortcuts. It enhances productivity by providing a searchable interface for commands and navigation.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codes={[
+    {
+      code:
+`const kbarItems: KbarItem[] = [
+    {
+      id: 'home',
+      name: 'Home',
+      section: 'Navigation',
+      shortcut: ['H'],
+      keywords: 'home main start',
+      href: '/',
+      icon: 'home'
+    },
+    {
+      id: 'docs',
+      name: 'Documentation',
+      section: 'Navigation',
+      shortcut: ['D'],
+      keywords: 'docs guide help',
+      href: '/docs',
+      icon: 'document'
+    }
+];
+
+function MyLayout({ children }) {
+    return (
+      <>
+        <header>
+          <Kbar items={kbarItems}>
+            <Button prefixIcon="search">Search</Button>
+          </Kbar>
+        </header>
+        <main>
+          {children}
+        </main>
+      </>
+    );
+}`,
+language: "tsx",
+label: "Kbar"
+}
+]}
+/>
+
+## Open from your own control
+
+To open the palette from a header button, a menu item or a sidebar link, control it with `open` and `onOpenChange` and leave out `children`. ⌘K still toggles it, and Escape hands focus back to your button.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codes={[
+    {
+      code:
+`"use client";
+
+function Header() {
+    const [open, setOpen] = useState(false);
+    return (
+      <Row as="header" horizontal="between" vertical="center">
+        <Logo />
+        <Button prefixIcon="search" variant="secondary" onClick={() => setOpen(true)}>
+          Search
+        </Button>
+        <Kbar items={kbarItems} open={open} onOpenChange={setOpen} />
+      </Row>
+    );
+}`,
+      language: "tsx",
+      label: "Controlled"
+    }
+  ]}
+/>
+
+## Your own matching
+
+By default a query matches item names, keywords and sections, case-insensitively, in the order you passed the items. To rank results yourself (typo tolerance, recent items first), pass `filter`: it gets the items and the query and returns the items to show, in order. Sections follow the order of their first item. Kbar only calls it for a non-empty query.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codes={[
+    {
+      code:
+`const startsFirst: KbarFilter = (items, query) => {
+    const q = query.toLowerCase();
+    const hits = items.filter((item) => item.name.toLowerCase().includes(q));
+    return [
+      ...hits.filter((item) => item.name.toLowerCase().startsWith(q)),
+      ...hits.filter((item) => !item.name.toLowerCase().startsWith(q)),
+    ];
+};
+
+<Kbar items={kbarItems} filter={startsFirst} />`,
+      language: "tsx",
+      label: "Ranking"
+    }
+  ]}
+/>
+
+## API reference
+
+<PropsTable
+  component="Kbar"
+  describe={{
+    items: "The commands, each with a label, an action and optional keywords.",
+    children: "The trigger that opens it. Leave it out when your own control opens the palette.",
+    inputSize: "Size of the search field.",
+    open: "Controlled open state, for opening the palette from a Button, a menu item or anywhere else.",
+    onOpenChange: "Called with the next open state when ⌘K, the trigger, Escape, an option or a route change opens or closes the palette.",
+    filter: "Your own matching and ranking: return the items to show for the query, in order. Without it, a case-insensitive match on name, keywords and section.",
+    labels: "The palette's own words (dialog, results, noResults, navigate, goTo), for a translated interface.",
+  }}
+  content={[
+    ["children"]
+  ]}
+/>
+
+<PropsTable
+  content={[
+    ["id", "string"],
+    ["name", "string"],
+    ["section", "string"],
+    ["shortcut", "string[]"],
+    ["keywords", "string"],
+    ["href", "string"],
+    ["perform", "() => void"],
+    ["icon", "string"],
+    ["description", "ReactNode"],
+    ["placeholder", "string"]
+  ]}
+/>
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codes={[
+    {
+      code:
+`const items = [
+    { id: 'home', name: 'Home', section: 'Navigation', keywords: 'home', href: '/' },
+];
+
+<Kbar inputSize="m" items={items}>
+    <Button>Open</Button>
+</Kbar>
+
+<Kbar inputSize="s" items={items}>
+    <Button>Open (small)</Button>
+</Kbar>
+
+<Kbar inputSize="l" items={items}>
+    <Button>Open (large)</Button>
+</Kbar>`,
+      language: "tsx",
+      label: "inputSize"
+    }
+  ]}
+/>
+
+## KbarItem
+
+Each item in the command palette is defined by the `KbarItem` interface:
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  isCollapsible={false}
+  codes={[
+    {
+      code:
+`interface KbarItem {
+    id: string;          // Unique identifier for the item
+    name: string;        // Display name in the command palette
+    section: string;     // Group name for organizing items
+    shortcut: string[];  // Keyboard shortcut keys
+    keywords: string;    // Search keywords
+    href?: string;       // Navigation URL (optional)
+    perform?: () => void; // Action to perform when selected (optional)
+    icon?: string;       // Icon name from Once UI icon set (optional)
+    description?: ReactNode; // Additional description (optional)
+}`,
+      language: "tsx",
+      label: "KbarItem",
+    },
+  ]}
+/>
+
+You must provide either `href` or `perform` for each item to define what happens when the item is selected.
+
+## Accessibility
+
+The Kbar component supports full keyboard navigation:
+
+- `↑` / `↓`: Navigate between items
+- `Enter`: Select the highlighted item
+- `Esc`: Close the command palette
+
+Users can also type to search and filter the available commands.
+
+## Best practices
+
+- Keep item names short and descriptive
+- Use icons to make items more recognizable
+- Group related items into logical sections
+- Include relevant keywords to improve search results
+- Provide keyboard shortcuts for frequently used actions
+- Consider adding a visible button to open Kbar for discoverability

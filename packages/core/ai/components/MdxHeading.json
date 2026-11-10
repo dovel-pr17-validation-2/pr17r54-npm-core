@@ -1,0 +1,61 @@
+{
+ "name": "MdxHeading",
+ "group": "mdx",
+ "importFrom": "@once-ui-system/core/mdx",
+ "props": {
+  "as": "!MdxHeadingTag",
+  "margin": "SpacingToken | number | \"auto\"",
+  "marginLeft": "SpacingToken | number | \"auto\"",
+  "marginRight": "SpacingToken | number | \"auto\"",
+  "marginTop": "SpacingToken | number | \"auto\"",
+  "marginBottom": "SpacingToken | number | \"auto\"",
+  "marginX": "SpacingToken | number | \"auto\"",
+  "marginY": "SpacingToken | number | \"auto\""
+ },
+ "tags": [
+  "mdx",
+  "docs",
+  "navigation"
+ ],
+ "pairsWith": [
+  "HeadingNav",
+  "MdxHeadingAnchor"
+ ],
+ "mixinsRef": [],
+ "types": {
+  "MdxHeadingTag": [
+   "h1",
+   "h2",
+   "h3",
+   "h4",
+   "h5",
+   "h6"
+  ],
+  "SpacingToken": [
+   "xl",
+   "l",
+   "m",
+   "s",
+   "xs",
+   "0",
+   "1",
+   "2",
+   "4",
+   "8",
+   "12",
+   "32",
+   "64",
+   "160",
+   "16",
+   "20",
+   "24",
+   "40",
+   "48",
+   "56",
+   "72",
+   "80",
+   "104",
+   "128"
+  ]
+ }
+}

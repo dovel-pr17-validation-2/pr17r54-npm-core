@@ -1,0 +1,664 @@
+"use client";
+
+import React, {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
+import { Column } from "../../components/Column";
+import { Flex } from "../../components/Flex";
+import { Icon } from "../../components/Icon";
+import { Input } from "../../components/Input";
+import { Kbd } from "../../components/Kbd";
+import { Option } from "../../components/Option";
+import { Row } from "../../components/Row";
+import { ScrollLock } from "../../components/ScrollLock";
+import { Text } from "../../components/Text";
+import { useAdapters } from "../../contexts/AdapterProvider";
+import type { IconName } from "../../icons";
+import { mergeLabels } from "../../internal/labels";
+import type { TShirtSizes } from "../../types";
+import styles from "./Kbar.module.scss";
+
+const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
+export interface KbarItem {
+  id: string;
+  name: string;
+  section: string;
+  shortcut?: string[];
+  keywords?: string;
+  href?: string;
+  perform?: () => void;
+  icon?: IconName;
+  description?: ReactNode;
+  placeholder?: string;
+}
+
+/**
+ * Decides which items a query shows, and in what order. Kbar renders exactly
+ * what it returns: sections appear in the order of their first item, and items
+ * keep the returned order within their section. Only called for a non-empty
+ * query; an empty one lists every item.
+ */
+export type KbarFilter = (items: KbarItem[], query: string) => KbarItem[];
+
+/** The palette's own words. Omitted fields keep the English default. */
+export interface KbarLabels {
+  /** The dialog's accessible name. Defaults to `"Command palette"`. */
+  dialog?: string;
+  /** The results list's accessible name. Defaults to `"Results"`. */
+  results?: string;
+  /** Shown when a query matches nothing. Defaults to `"No results found"`. */
+  noResults?: string;
+  /** The footer hint beside the arrow keys. Defaults to `"Navigate"`. */
+  navigate?: string;
+  /** The footer hint beside Enter. Defaults to `"Go to"`. */
+  goTo?: string;
+}
+
+const DEFAULT_LABELS: Required<KbarLabels> = {
+  dialog: "Command palette",
+  results: "Results",
+  noResults: "No results found",
+  navigate: "Navigate",
+  goTo: "Go to",
+};
+
+/** Case-insensitive substring match on name, keywords and section, in the given order. */
+const matchItems: KbarFilter = (items, query) => {
+  const searchLower = query.toLowerCase();
+  return items.filter(
+    (item) =>
+      item.name.toLowerCase().includes(searchLower) ||
+      (item.keywords ? item.keywords.toLowerCase().includes(searchLower) : false) ||
+      (item.section ? item.section.toLowerCase().includes(searchLower) : false),
+  );
+};
+
+interface KbarOption {
+  value: string;
+  label: string;
+  prefix?: ReactNode;
+  suffix?: ReactNode;
+  description?: ReactNode;
+  href?: string;
+  onClick?: () => void;
+}
+
+const SectionHeader: React.FC<{ id: string; label: string }> = ({ id, label }) => (
+  <Row
+    id={id}
+    paddingX="12"
+    paddingBottom="8"
+    paddingTop="12"
+    textVariant="label-default-s"
+    onBackground="neutral-weak"
+  >
+    {label}
+  </Row>
+);
+
+/**
+ * The search field is the combobox: focus stays in it while the arrow keys
+ * move the active option, which `aria-activedescendant` points at, so typing
+ * and choosing never fight over focus.
+ */
+const KbarSearchInput: React.FC<{
+  id: string;
+  placeholder: string;
+  searchQuery: string;
+  onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  inputSize?: TShirtSizes;
+  /** Set while there are results to show; the popup is collapsed otherwise. */
+  listboxId?: string;
+  activeOptionId?: string;
+}> = ({
+  id,
+  placeholder,
+  searchQuery,
+  onSearchChange,
+  onKeyDown,
+  inputRef,
+  inputSize = "m",
+  listboxId,
+  activeOptionId,
+}) => (
+  <Input
+    id={id}
+    placeholder={placeholder}
+    aria-label={placeholder}
+    role="combobox"
+    aria-autocomplete="list"
+    aria-expanded={Boolean(listboxId)}
+    aria-controls={listboxId}
+    aria-activedescendant={activeOptionId}
+    value={searchQuery}
+    onChange={onSearchChange}
+    onKeyDown={onKeyDown}
+    ref={inputRef}
+    height={inputSize}
+    prefix={<Icon marginLeft="4" onBackground="neutral-weak" name="search" size="xs" />}
+    autoComplete="off"
+  />
+);
+
+export interface KbarTriggerProps extends Omit<React.ComponentProps<typeof Row>, "onClick"> {
+  onClick?: () => void;
+}
+
+export const KbarTrigger: React.FC<KbarTriggerProps> = ({ onClick, children, ...rest }) => {
+  return (
+    <Row onClick={onClick} {...rest}>
+      {children}
+    </Row>
+  );
+};
+
+export interface KbarContentProps {
+  open: boolean;
+  onClose: () => void;
+  items: KbarItem[];
+  placeholder?: string;
+  inputSize?: TShirtSizes;
+  /**
+   * Your own matching and ranking: return the items to show for `query`, in
+   * order. Without it, a case-insensitive substring match on name, keywords
+   * and section, in the items' own order.
+   */
+  filter?: KbarFilter;
+  /** The palette's own words, for a translated interface. */
+  labels?: KbarLabels;
+}
+
+export const KbarContent: React.FC<KbarContentProps> = ({
+  open,
+  onClose,
+  items,
+  placeholder = "Search",
+  inputSize = "m",
+  filter,
+  labels,
+}) => {
+  const words = mergeLabels(DEFAULT_LABELS, labels);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeIndex, setActiveIndex] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const { useNavigate } = useAdapters();
+  const navigate = useNavigate();
+  const [isClosing, setIsClosing] = useState(false);
+  const baseId = useId();
+  const listboxId = `${baseId}-listbox`;
+  const optionId = (index: number) => `${baseId}-option-${index}`;
+  const sectionId = (index: number) => `${baseId}-section-${index}`;
+
+  const handleClose = useCallback(() => {
+    setIsClosing(true);
+    // Add a small delay to allow animations to complete
+    requestAnimationFrame(() => {
+      onClose();
+    });
+  }, [onClose]);
+
+  // The items the query shows, in the order to show them.
+  const filteredItems = useMemo(
+    () => (searchQuery ? (filter ?? matchItems)(items, searchQuery) : items),
+    [items, searchQuery, filter],
+  );
+
+  // Group items by section. `start` is the section's first index in the flat
+  // list the arrow keys and `aria-activedescendant` count in.
+  const sections = useMemo(() => {
+    const names = Array.from(new Set(filteredItems.map((item) => item.section)));
+    let start = 0;
+
+    return names.map((section) => {
+      const options = filteredItems
+        .filter((item) => item.section === section)
+        .map(
+          (item): KbarOption => ({
+            value: item.id,
+            label: item.name,
+            prefix: item.icon ? (
+              <Icon name={item.icon} size="xs" onBackground="neutral-weak" />
+            ) : undefined,
+            suffix:
+              item.shortcut && item.shortcut.length > 0 ? (
+                <Row gap="2" style={{ transform: "scale(0.9)", transformOrigin: "right" }}>
+                  {item.shortcut.map((key, i, keys) => (
+                    <Row gap="2" key={i}>
+                      <Kbd minWidth="24" style={{ transform: "scale(0.8)" }}>
+                        {key}
+                      </Kbd>
+                      {i < keys.length - 1 && <Text onBackground="neutral-weak">+</Text>}
+                    </Row>
+                  ))}
+                </Row>
+              ) : undefined,
+            description: item.description,
+            href: item.href,
+            onClick: item.perform
+              ? () => {
+                  item.perform?.();
+                  onClose();
+                }
+              : undefined,
+          }),
+        );
+      const group = { section, start, options };
+      start += options.length;
+      return group;
+    });
+  }, [filteredItems, onClose]);
+
+  const options = useMemo(() => sections.flatMap((group) => group.options), [sections]);
+  const hasResults = options.length > 0;
+  const active = hasResults ? Math.min(activeIndex, options.length - 1) : -1;
+
+  // Handle item selection
+  const handleSelect = useCallback(
+    (index: number) => {
+      const selectedOption = options[index];
+      if (selectedOption) {
+        const originalItem = items.find((item) => item.id === selectedOption.value);
+        if (originalItem) {
+          if (originalItem.href) {
+            navigate(originalItem.href);
+            handleClose();
+          } else if (originalItem.perform) {
+            originalItem.perform();
+            handleClose();
+          }
+        }
+      }
+    },
+    [options, items, navigate, handleClose],
+  );
+
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const count = options.length;
+
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        if (count > 0) setActiveIndex((active + 1) % count);
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        if (count > 0) setActiveIndex((active - 1 + count) % count);
+        break;
+      case "Home":
+      case "End":
+        if (count === 0) return;
+        e.preventDefault();
+        setActiveIndex(e.key === "Home" ? 0 : count - 1);
+        break;
+      case "Enter":
+        if (active < 0) return;
+        e.preventDefault();
+        handleSelect(active);
+        break;
+      case "Tab":
+        // The search field is the dialog's only tab stop. Tab stays on it
+        // rather than walking out to the page behind the modal overlay.
+        e.preventDefault();
+        break;
+    }
+  };
+
+  // Keep the active option in view as the arrow keys move it. Focus no
+  // longer goes to the option, so nothing else would scroll the list.
+  useEffect(() => {
+    if (active < 0) return;
+    document.getElementById(`${baseId}-option-${active}`)?.scrollIntoView?.({ block: "nearest" });
+  }, [active, baseId]);
+
+  // Escape closes the palette, and only the palette: it is caught before
+  // anything else sees it and marked handled, so a Drawer, Dialog or Modal the
+  // palette was opened from stays open.
+  useEffect(() => {
+    const handleEscapeKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        handleClose();
+      }
+    };
+
+    if (open) {
+      document.addEventListener("keydown", handleEscapeKey, true);
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleEscapeKey, true);
+    };
+  }, [open, handleClose]);
+
+  // Clear search query when kbar is closed
+  useEffect(() => {
+    if (!open) {
+      setSearchQuery("");
+      setActiveIndex(0);
+    }
+  }, [open]);
+
+  // Focus search input when kbar is opened
+  useEffect(() => {
+    if (open && inputRef.current) {
+      // Use a small timeout to ensure the component is fully rendered
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
+
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+
+  // Hand focus back to whatever had it before the palette opened — usually
+  // its trigger — when it closes or unmounts. A layout effect runs before the
+  // palette leaves the DOM; a passive one ran after, so focus sat on <body> in
+  // between and a slow machine could see it there.
+  useIsomorphicLayoutEffect(() => {
+    if (!open) return;
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    return () => {
+      opener?.focus();
+    };
+  }, [open]);
+
+  // Handle search input change. A new query starts at the top of its results.
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setActiveIndex(0);
+  };
+
+  // Render nothing if not open
+  if (!open) return null;
+
+  // Create portal for the kbar
+  return (
+    <>
+      {/* The whole panel, not just the results: the search field sits outside
+          the list, and keys typed into it (Space among them) must not be
+          swallowed as page-scroll keys. */}
+      <ScrollLock enabled={open} allowScrollInElement={containerRef} />
+      <Row
+        position="fixed"
+        top="0"
+        left="0"
+        right="0"
+        bottom="0"
+        zIndex={10}
+        center
+        background="overlay"
+        className={`${styles.overlay} ${isClosing ? styles.closing : ""}`}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            handleClose();
+          }
+        }}
+      >
+        <Column
+          ref={containerRef}
+          fitHeight
+          maxWidth="xs"
+          background="surface"
+          radius="l-4"
+          border="neutral-alpha-medium"
+          overflow="hidden"
+          shadow="l"
+          className={`${styles.content} ${isClosing ? styles.closing : ""}`}
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-label={words.dialog}
+        >
+          <Row fillWidth padding="8">
+            <KbarSearchInput
+              id={`${baseId}-search`}
+              placeholder={placeholder}
+              searchQuery={searchQuery}
+              onSearchChange={handleSearchChange}
+              onKeyDown={handleInputKeyDown}
+              inputRef={inputRef}
+              inputSize={inputSize}
+              listboxId={hasResults ? listboxId : undefined}
+              activeOptionId={hasResults ? optionId(active) : undefined}
+            />
+          </Row>
+          <Column
+            maxHeight={32}
+            fillWidth
+            padding="4"
+            gap="2"
+            overflowY="auto"
+            radius="l"
+            border
+            role={hasResults ? "listbox" : undefined}
+            id={hasResults ? listboxId : undefined}
+            aria-label={hasResults ? words.results : undefined}
+          >
+            {sections.map((group, sectionIndex) => (
+              // A labelled group per section, so the section name is read as
+              // the options' context instead of loose text inside the list.
+              <Column
+                key={group.section}
+                role="group"
+                aria-labelledby={sectionId(sectionIndex)}
+                fillWidth
+                gap="2"
+              >
+                <SectionHeader id={sectionId(sectionIndex)} label={group.section} />
+                {group.options.map((option, i) => {
+                  const index = group.start + i;
+                  return (
+                    <Option
+                      key={option.value}
+                      id={optionId(index)}
+                      // Selection follows the active option, as in any
+                      // single-select combobox; the look stays the keyboard
+                      // highlight it always was.
+                      aria-selected={index === active}
+                      highlighted={index === active}
+                      tabIndex={-1}
+                      onMouseEnter={() => setActiveIndex(index)}
+                      label={option.label}
+                      value={option.value}
+                      prefix={option.prefix}
+                      suffix={option.suffix}
+                      description={option.description}
+                      {...(option.href
+                        ? {
+                            href: option.href,
+                            onClick: undefined,
+                            onLinkClick: handleClose,
+                          }
+                        : { onClick: option.onClick })}
+                    />
+                  );
+                })}
+              </Column>
+            ))}
+            {searchQuery && filteredItems.length === 0 && (
+              <Flex
+                fillWidth
+                center
+                paddingX="16"
+                paddingY="64"
+                textVariant="body-default-m"
+                onBackground="neutral-weak"
+              >
+                {words.noResults}
+              </Flex>
+            )}
+          </Column>
+          <Row fillWidth paddingX="24" paddingY="8">
+            <Row
+              style={{ transform: "scale(0.8)", transformOrigin: "left" }}
+              gap="8"
+              onBackground="neutral-weak"
+              textVariant="label-default-m"
+              vertical="center"
+            >
+              <Kbd minWidth="20">
+                <Row>
+                  <Icon name="chevronUp" size="xs" />
+                </Row>
+              </Kbd>
+              <Kbd minWidth="20">
+                <Row>
+                  <Icon name="chevronDown" size="xs" />
+                </Row>
+              </Kbd>
+              <Text marginLeft="8" marginRight="24">
+                {words.navigate}
+              </Text>
+              <Kbd minWidth="20">
+                <Row>
+                  <Icon name="enter" size="xs" />
+                </Row>
+              </Kbd>
+              <Text marginLeft="8">{words.goTo}</Text>
+            </Row>
+          </Row>
+        </Column>
+      </Row>
+    </>
+  );
+};
+
+export interface KbarProps {
+  items: KbarItem[];
+  /**
+   * The trigger, wrapped in a focusable row that opens the palette. Leave it
+   * out to open the palette from your own Button or menu item with `open`.
+   */
+  children?: React.ReactNode;
+  inputSize?: TShirtSizes;
+  /** The search field's placeholder inside the palette. Defaults to "Search". */
+  placeholder?: string;
+  /**
+   * Your own matching and ranking: return the items to show for `query`, in
+   * order, and Kbar renders exactly that (sections in the order of their first
+   * item). Without it, a case-insensitive substring match on name, keywords
+   * and section. Only called for a non-empty query.
+   */
+  filter?: KbarFilter;
+  /** The palette's own words, for a translated interface. */
+  labels?: KbarLabels;
+  /**
+   * Controlled open state. Pair it with `onOpenChange`:
+   * `<Button onClick={() => setOpen(true)} />` and
+   * `<Kbar items={items} open={open} onOpenChange={setOpen} />`.
+   */
+  open?: boolean;
+  /** The next open state, whenever ⌘K, the trigger, Escape, an option or a route change asks for one. */
+  onOpenChange?: (open: boolean) => void;
+  [key: string]: any; // Allow any additional props
+}
+
+export const Kbar: React.FC<KbarProps> = ({
+  items,
+  children,
+  inputSize,
+  placeholder,
+  filter,
+  labels,
+  open: openProp,
+  onOpenChange,
+  ...rest
+}) => {
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const controlled = openProp !== undefined;
+  const open = controlled ? openProp : uncontrolledOpen;
+  const { usePathname } = useAdapters();
+  const pathname = usePathname();
+
+  // The ⌘K listener is bound once, so it reads the latest state and setter
+  // through refs rather than re-binding on every render.
+  const openRef = useRef(open);
+  openRef.current = open;
+  const setOpenRef = useRef<(next: boolean) => void>(() => {});
+  setOpenRef.current = (next: boolean) => {
+    if (!controlled) setUncontrolledOpen(next);
+    onOpenChange?.(next);
+  };
+
+  const handleOpen = () => setOpenRef.current(true);
+  const handleClose = () => setOpenRef.current(false);
+
+  // Close Kbar when pathname changes, not on mount: a controlled palette may
+  // start open.
+  const pathnameRef = useRef(pathname);
+  useEffect(() => {
+    if (pathnameRef.current === pathname) return;
+    pathnameRef.current = pathname;
+    if (openRef.current) setOpenRef.current(false);
+  }, [pathname]);
+
+  // Add keyboard shortcut listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Check for Command+K (Mac) or Control+K (Windows/Linux)
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault(); // Prevent default browser behavior
+        setOpenRef.current(!openRef.current); // Toggle Kbar open/close
+      }
+    };
+
+    // Add the event listener
+    document.addEventListener("keydown", handleKeyDown);
+
+    // Clean up the event listener on component unmount
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  return (
+    <>
+      {children != null && (
+        <KbarTrigger
+          tabIndex={0}
+          // It is the element Tab lands on (its Button child stays a plain
+          // div), so it is the button: it had no role, and said nothing about
+          // the palette it opens.
+          role="button"
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          onClick={handleOpen}
+          onKeyDown={(e: React.KeyboardEvent) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              handleOpen();
+            }
+          }}
+          {...rest}
+        >
+          {children}
+        </KbarTrigger>
+      )}
+      {open &&
+        createPortal(
+          <KbarContent
+            open={open}
+            onClose={handleClose}
+            items={items}
+            placeholder={placeholder}
+            inputSize={inputSize}
+            filter={filter}
+            labels={labels}
+          />,
+          document.body,
+        )}
+    </>
+  );
+};

@@ -1,0 +1,170 @@
+---
+title: "ThemeSwitcher"
+summary: "ThemeSwitcher is a compact toggle group for switching between light, dark, and system themes using icon buttons. It can collapse to the active theme and reveal the rest on hover."
+updatedAt: "2026-10-11"
+docs: "once-ui/components/themeSwitcher.mdx"
+github: "components/ThemeSwitcher.tsx"
+navLabel: "Theme Switcher"
+navIcon: "components"
+---
+
+Use `ThemeSwitcher` to provide users with a quick way to toggle between themes. It integrates with `ThemeProvider` and uses `useTheme()` under the hood.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  preview={
+    <ThemeSwitcher />
+  }
+  codes={[
+    {
+      code:
+`<ThemeSwitcher />`,
+      language: "tsx",
+      label: "ThemeSwitcher"
+    }
+  ]}
+/>
+
+## Behavior
+
+- Highlights the active theme using the `"primary"` variant, and exposes it to
+  assistive technology with `aria-pressed`.
+- Automatically updates the global theme via `useTheme().setTheme`.
+- Renders a row of three icons: `system`, `dark`, `light`.
+- In a settings form, `semantics="radio"` makes it a `radiogroup` instead: one
+  tab stop on the active theme, and the arrow keys move and choose. Name it
+  with `aria-label`, as StylePanel's Theme row does with its label.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  preview={<ThemeSwitcher semantics="radio" aria-label="Theme" />}
+  codes={[
+    {
+      code: `<ThemeSwitcher semantics="radio" aria-label="Theme" />`,
+      language: "tsx",
+      label: "Radio group"
+    }
+  ]}
+/>
+
+## Collapsed
+
+`collapsed` shows only the active theme and reveals the rest on hover or focus.
+Use it where the control has to be reachable from every page but should not
+spend three slots of a header on itself.
+
+It stays a real toggle group. Every option keeps its tab stop, so tabbing into
+the group opens it; and a device that cannot hover gets all three from the
+start, because otherwise the only way in would be to tap the visible button —
+which would have already changed the theme. The width transition is the only
+motion, and `prefers-reduced-motion` turns it off.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  preview={
+    <ThemeSwitcher collapsed />
+  }
+  codes={[
+    {
+      code:
+`<ThemeSwitcher collapsed />`,
+      language: "tsx",
+      label: "Collapsed"
+    }
+  ]}
+/>
+
+## Opening downwards
+
+A collapsed group grows sideways by default, which is right when it has room beside it and wrong when it has neighbours: the group widening pushes them along, and the option the pointer was resting on slides out from under it. `direction="column"` lifts the options into a panel over the page instead. The control keeps a one-option footprint whatever it is doing, so nothing around it moves, and a sticky header does not change height when the panel opens.
+
+It opens downwards rather than centring itself on the active option. An open panel is taller than a typical header, so anchoring it on the second or third option would put its top edge above the viewport.
+
+The active option leads. Open in fixed order and the panel's first slot belongs to whichever theme is listed first, so the icon already under the pointer changes identity as the panel unrolls — hover the moon, and the computer arrives under your cursor. Leading with the active option keeps one invariant instead: the theme in force is the one in the anchor slot, before opening and again after choosing. The reorder is done in the markup, not with CSS `order`, so the tab order and the visual order stay the same thing.
+
+On a device that cannot hover the panel is always open, and it takes its space in the layout rather than hanging over what is underneath.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  preview={
+    <Row fillWidth horizontal="end" paddingRight="16" paddingBottom="80">
+      <ThemeSwitcher collapsed direction="column" />
+    </Row>
+  }
+  codes={[
+    {
+      code:
+`<ThemeSwitcher collapsed direction="column" />`,
+      language: "tsx",
+      label: "Opening downwards"
+    }
+  ]}
+/>
+
+## Custom layout
+
+Pass any valid `Row` props to control spacing, padding, layout, etc.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  preview={
+    <ThemeSwitcher direction="column" padding="4" gap="8" background="surface" border="surface" radius="full" />
+  }
+  codes={[
+    {
+      code:
+`<ThemeSwitcher direction="column" padding="4" gap="8" background="surface" border="surface" radius="full" />`,
+      language: "tsx",
+      label: "Custom style"
+    }
+  ]}
+/>
+
+## Localisation
+
+Each option is an icon button named "System theme", "Dark theme" and "Light
+theme". `labels` translates those names; whatever you leave out stays English.
+Inside a [StylePanel](/components/stylePanel#localisation), its
+`labels.themeSwitcher` reaches the Theme row's switcher.
+
+```tsx
+<ThemeSwitcher labels={{ system: t("theme.system"), dark: t("theme.dark"), light: t("theme.light") }} />
+```
+
+## Owning the state
+
+By default the switcher sets the theme through `ThemeProvider`, which applies it
+to the page and stores it. Pass `value` to own it instead: the switcher shows
+your theme as active, reports a choice through `onChange`, and changes nothing
+itself. That is what an editor previewing someone else's theme needs. Without
+`value`, `onChange` is still called, after the theme has been set.
+
+```tsx
+<ThemeSwitcher value={draft.theme} onChange={(theme) => setDraft({ ...draft, theme })} />
+```
+
+A [StylePanel](/components/stylePanel#owning-the-state) with `value` and
+`onChange` does this for its Theme row.
+
+## API reference
+
+<PropsTable
+  component="ThemeSwitcher"
+  describe={{
+    labels: "The options' accessible names, to translate them.",
+    semantics: "`toggle` (toggle buttons, the default) or `radio` (a radio group with one tab stop).",
+    value: "The active theme, when you own the state. The switcher then sets nothing.",
+    onChange: "Called with the chosen theme.",
+  }}
+  content={[
+    ["ref", "HTMLDivElement"],
+    ["className"],
+    ["style"],
+    ["...flex"]
+  ]}
+/>

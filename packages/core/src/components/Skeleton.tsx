@@ -1,0 +1,54 @@
+import classNames from "clsx";
+import React, { forwardRef } from "react";
+import { Flex } from "./Flex";
+import styles from "./Skeleton.module.scss";
+
+interface SkeletonProps extends React.ComponentProps<typeof Flex> {
+  /** Defaults to `line`. */
+  shape?: "line" | "circle" | "block";
+  /**
+   * The scale: height for a `line`, diameter for a `circle`, ignored by a
+   * `block` (which fills its container).
+   *
+   * Width is deliberately not here. Skeleton extends Flex, so width is a
+   * layout concern expressed the same way as on any other element —
+   * `width="80%"`, `maxWidth={24}` — instead of a second five-step scale that
+   * only meant percentages.
+   */
+  size?: "xl" | "l" | "m" | "s" | "xs";
+  /**
+   * Animation offset in milliseconds, for staggering a group of skeletons.
+   * Previously a "1".."6" index into six fixed classes, which is why it read
+   * as a step rather than the duration it actually is.
+   */
+  delay?: number;
+  style?: React.CSSProperties;
+  className?: string;
+}
+
+const Skeleton = forwardRef<HTMLDivElement, SkeletonProps>(
+  ({ shape = "line", size = "m", delay, style, className, ...props }, ref) => {
+    return (
+      <Flex
+        // A label on a plain div is not announced (axe: aria-prohibited-attr);
+        // a labelled skeleton says what is loading, as a status.
+        role={props["aria-label"] || props["aria-labelledby"] ? "status" : undefined}
+        {...props}
+        ref={ref}
+        style={delay !== undefined ? { animationDelay: `${delay}ms`, ...style } : style}
+        radius={shape === "line" || shape === "circle" ? "full" : undefined}
+        inline
+        className={classNames(
+          styles.skeleton,
+          styles[shape],
+          size && styles["size-" + size],
+          className,
+        )}
+      />
+    );
+  },
+);
+
+Skeleton.displayName = "Skeleton";
+
+export { Skeleton };

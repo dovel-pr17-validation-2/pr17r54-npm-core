@@ -1,0 +1,155 @@
+---
+title: "DataThemeProvider"
+summary: "The DataThemeProvider enables global style default configuration for Once UI's data-viz components."
+updatedAt: "2026-10-10"
+docs: "once-ui/contexts/dataThemeProvider.mdx"
+github: "contexts/DataThemeProvider.tsx"
+navLabel: "DataThemeProvider"
+navIcon: "chip"
+---
+
+The `DataThemeProvider` is a context provider that allows you to override the default app-level data-viz styles configuration.
+
+## Simple setup
+
+Wrap your app with `DataThemeProvider` and pass the style configuration as props.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  lineNumbers  
+  isCollapsible={false}
+
+codes={[
+{
+code:
+`<DataThemeProvider
+variant="gradient" // flat | gradient | outline
+mode="categorical" // categorical | divergent | sequential
+height={24} // default chart height
+axis={{
+      stroke: "var(--neutral-alpha-weak)",
+    }}
+tick={{
+      fill: "var(--neutral-on-background-weak)",
+      fontSize: 11,
+      line: false
+    }}
+
+>
+
+    {children}
+
+</DataThemeProvider>`,
+      language: "tsx",
+      label: "layout.tsx"
+    }
+  ]}
+/>
+
+## Advanced setup
+
+Keep the chart defaults in one file, typed with [defineConfig](/config#defineconfig), and spread them into the provider. The keys are the provider's prop names, so nothing is cast or renamed. We also recommend a `Providers` component to wrap your app.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  lineNumbers
+  codes={[
+    {
+      code:
+`"use client";
+
+import { DataThemeProvider, ThemeProvider, IconProvider, ToastProvider } from "@once-ui-system/core";
+import { dataStyle, style } from "@/resources/once-ui.config";
+
+export function Providers({ children }: {
+    children: React.ReactNode
+}) {
+    return (
+      <ThemeProvider {...style}>
+        <DataThemeProvider {...dataStyle}>
+          <ToastProvider>
+            <IconProvider>
+              {children}
+            </IconProvider>
+          </ToastProvider>
+        </DataThemeProvider>
+      </ThemeProvider>
+    );
+}`,
+      language: "tsx",
+      highlight: "4,11",
+      label: "Providers.tsx"
+    },
+    {
+      code:
+`import { defineConfig } from "@once-ui-system/core/config";
+
+export const { style, dataStyle } = defineConfig({
+  style: { brand: "blue", accent: "indigo" },
+  dataStyle: {
+    variant: "gradient", // flat | gradient | outline
+    mode: "categorical", // categorical | divergent | sequential
+    height: 24, // default chart height
+    axis: {
+      stroke: "var(--neutral-alpha-weak)",
+    },
+    tick: {
+      fill: "var(--neutral-on-background-weak)",
+      fontSize: 11,
+      line: false,
+    },
+  },
+});`,
+      language: "tsx",
+      label: "once-ui.config.js"
+    }
+  ]}
+/>
+
+Pass the same `dataStyle` to [ThemeInit](/contexts/themeProvider#ssr-hydration) as well, so `data-viz-style` is on `<html>` before the first paint: `<ThemeInit config={style} dataStyle={dataStyle} />`.
+
+## API reference
+
+### DataThemeProvider
+
+<PropsTable
+  component="DataThemeProvider"
+  content={[
+    ["variant", ["flat", "gradient", "outline"], "gradient"],
+    ["mode", ["categorical", "divergent", "sequential"], "categorical"],
+    ["height", "number", "24"],
+  ]}
+/>
+
+## useDataTheme
+
+`useDataTheme()` returns the current chart options plus a setter, so a control
+can change how every chart on the page draws without each chart being rewired.
+It throws outside a `DataThemeProvider`.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codes={[
+    {
+      code:
+`const { mode, setChartOptions } = useDataTheme();
+
+<SegmentedControl
+  value={mode}
+  buttons={[
+    { value: "categorical", label: "Categorical" },
+    { value: "divergent", label: "Divergent" },
+  ]}
+  onChange={(value) => setChartOptions({ mode: value as ChartOptions["mode"] })}
+/>`,
+      language: "tsx",
+      label: "useDataTheme"
+    }
+  ]}
+/>
+
+`setChartOptions` takes a partial: anything you leave out keeps its current
+value.

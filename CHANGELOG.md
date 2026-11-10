@@ -1,0 +1,3310 @@
+# Changelog
+
+All notable changes to `@once-ui-system/core` are documented in this file. It is the
+source of truth for release content going forward — GitHub release notes and any
+published changelog pages are generated from it, not the other way around.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
+version numbers follow the criteria defined in [RELEASING.md](RELEASING.md).
+
+Entries before 1.7.13 are reconstructed from GitHub releases and git history and may be
+incomplete; reconciling them against actual npm release history is a scheduled roadmap
+item (see `ROADMAP.md`, Week 4).
+
+## [Unreleased]
+
+## [2.8.0] — 2026-11-06
+
+Minor: `SegmentedControl` gets a new `sliding` prop. It is on by default, which changes how
+selection looks (an improvement that rides a minor, per RELEASING.md). Plus one `Banner` fix.
+
+### Changed
+
+- **`SegmentedControl` selection slides.** The selected background now slides along the
+  rail to the picked option, morphing its width between options of different widths. It
+  doesn't slide under reduced motion, `compact` keeps the static look, and
+  `sliding={false}` turns it off. The first paint (and server render) is unchanged.
+
+### Added
+
+- **`EmptyState`.** What a page, panel or list shows before it has anything in it: a
+  `visual` (a `Mascot`, a Cube Emote, an illustration) or an `icon`, a `title`, one line of
+  `description`, and an `action` with an optional `secondaryAction`. `size` is `s` inside a
+  table or list, `m` (default) in a card and `l` for a whole page; `titleAs` sets the
+  heading level. `DataTable`'s own empty and no-results states are now built from it, with
+  the same text and actions as before.
+
+### Fixed
+
+- **`Banner` dismiss button sits at the right edge again.** In production bundles the
+  button's own `position: relative` could load after the banner's rule and win, which put
+  the close button inline after the text instead of at the strip's right edge.
+- **`Mascot surface="flat"` is flat.** The eyes no longer keep their white glint on the
+  flat surface.
+- **`DatePicker` opens without a second animation.** The calendar no longer wipes in through
+  a blurred `RevealFx` mask after the dropdown has already faded in, and switching between
+  the calendar and the time panel is instant instead of waiting 400 ms. Inline pickers show
+  at once too.
+
+## [2.7.0] — 2026-11-05
+
+Minor: everything here adds new props, components or variants, changes the look of
+existing components without changing their props (`Badge`, `Option`), or fixes bugs. No
+consumer has to change code.
+
+### Added
+
+- **`Logo monogram`.** `<Logo text="Acme" monogram />` draws a plain mark for apps that
+  have no logo yet: one of five shapes picked from the name (the same name always gets
+  the same mark), in black on light and white on dark. Pass a string to draw those
+  characters instead. `icon` still wins. The `Logo.text` gotcha now tells agents to use
+  `monogram` instead of drawing placeholder SVGs, and the app starter's header uses it.
+- **`emphasis` on `Flex` and `Grid`.** Draws attention to an element with an animated
+  brand-to-accent edge that travels round the border. Each value names a look: `edge` is
+  the edge alone, `glow` (or `true`) adds a soft halo for bars and inputs, `aura` a wide
+  one for panels. It is a class, so the element stays a server component; it stands still
+  with reduced motion, lies over a `border` of any width, and takes `--emphasis-from`,
+  `--emphasis-to`, `--emphasis-width` and `--emphasis-duration`.
+- **Globe and 3D buildings on `Map`.** `projection="globe"` curves the world when zoomed
+  out, and `buildings="3d"` raises buildings to their height from zoom 13, coloured from
+  the neutral surface up to the brand colour and repainted when the theme changes. A
+  controlled `viewport` that jumps to another city now flies there instead of gliding
+  (instant with reduced motion).
+- **`closeLabel` on `Drawer`, `Dialog` and `Modal`.** The close button's tooltip and
+  accessible name, for a UI that isn't in English. Defaults to "Close", as before.
+- **`LogoLoader`.** A page or app splash drawn from a product's own SVG wordmark or
+  symbol (`svg` markup or a `src` URL): each letter and shape is traced, left to right by
+  default, then the logo fills in and holds. `onComplete` fires when the intro has played
+  and `settled` shows the filled logo without replaying it. Only the SVG's geometry is
+  read, so nothing else from the file reaches the page. With reduced motion the logo
+  fades in instead.
+- **Announcement banners.** `Banner variant="mesh"` draws a soft, slowly drifting
+  gradient wash from the theme's brand and accent scales (`meshColors` picks others) under
+  a scrim that keeps the text readable in dark and light. `link` adds an inline,
+  underlined call to action; `dismissible` adds a close button, and `dismissKey` remembers
+  the dismissal in the browser. `ThemeInit` reads remembered dismissals before the first
+  paint, so a dismissed banner never flashes in. Banner stays a server component, and a
+  caller's own `background` now replaces the default brand strip instead of clashing with it.
+
+- **`Kbar` takes your own matching and ranking.** `filter={(items, query) => …}` returns
+  the items a query shows, in order, and the palette renders exactly that, sections in the
+  order of their first item, so an app can rank with typo tolerance or recent items first.
+  Without it the case-insensitive match on name, keywords and section is unchanged. Its
+  words (`labels`: dialog name, results, no results, the footer hints) can be translated;
+  English stays the default. `KbarFilter` and `KbarLabels` are exported types.
+
+### Changed
+
+- **`Badge` redesign.** A compact pill (28px tall, `label-default-s`) on the surface
+  colour with a hairline neutral border and neutral text, the icon in brand. The skewed
+  shine that swept across it every few seconds is replaced by a short brand-to-accent beam
+  that travels round the border, faster on hover and still under reduced motion. Padding,
+  colour and text props still override the defaults.
+- **Danger and selected `Option`s.** A danger item in a menu now hovers and takes focus
+  as a soft danger tint with danger text, instead of a solid red block. At rest, its
+  label and icon are danger-coloured too. A selected option gets a weak neutral fill
+  with no border, so it no longer looks like a pressed button.
+
+### Fixed
+
+- **Theme providers render where storage is blocked.** In a sandboxed or third-party
+  iframe, or with cookies off, reading `localStorage` throws a SecurityError, and
+  `ThemeProvider` took the whole page down with it (seen in Sentry on Aveiro's embeds).
+  `ThemeProvider` and `DataThemeProvider` now carry on without storage: themes still
+  switch, the choice just isn't remembered.
+- **`MegaMenu` panels stay inside the window.** A wide panel under a trigger near the
+  right edge used to open past the side of the screen; it now moves left until it fits,
+  16px from the edge, and a panel wider than the window keeps its left edge in view.
+- **`Schema` image fallback.** With no `image`, JSON-LD pointed at `/og?title=…`, a route
+  no template serves, so every such page carried a broken image. It now uses
+  `/api/og/generate`, the same default `Meta.generate` uses for the social image.
+- **An enlargeable `Media` shows a focus ring.** Its inline `outline: none` beat the
+  `focus-ring` class, so tabbing to the image left no visible focus. The box now leaves the
+  outline to `focus-ring`, which draws only for keyboard focus; a click still shows nothing.
+- **`HeadingNav`, `Scroller` and `Swiper` respect reduced motion.** Their buttons, links and
+  drag snap scrolled with `behavior: "smooth"` whatever the visitor's setting; under
+  `prefers-reduced-motion: reduce` they now jump straight there. Everyone else still gets
+  the smooth scroll.
+- **Copying a heading's link or a `CodeBlock` works on plain http.** Outside a secure
+  context (a dev server opened from a phone on the LAN) there is no `navigator.clipboard`,
+  so the heading anchor did nothing and CodeBlock's copy button did nothing. Both now fall
+  back to a hidden textarea and `document.execCommand("copy")`, and report the real
+  outcome: the toast says when the link could not be copied, and CodeBlock's check only
+  shows after a copy that worked. Where the Clipboard API works nothing changes.
+- **`HeadingLink` takes a `label`.** It always named its copy link ("Copy link to …") from
+  the text it could read in its children on the client, so a child that renders its own
+  text dropped out of the name and a caller could not set it. `label` sets the name, as
+  `MdxHeading` already does with a label built on the server; without it the name still
+  comes from the children.
+
+## [2.6.0] — 2026-10-24
+
+### Added
+
+- **`Mascot` turns into a cube while it works.** `working="cube"` swaps the mascot for a
+  WebGL cube that scrambles and solves while `state` is `thinking`, then turns into the
+  Once UI logo and morphs back. `sides` colors the faces (`"tints"` derives them from
+  `color`), the gaps between pieces are hairline thin, and without WebGL or with
+  reduced motion the flat mascot stays.
+- **Poke the `Mascot`.** A click or tap squashes it with a surprised face; `poke={false}`
+  turns it off.
+- **Kawaii moods for `Mascot`.** `love`, `excited`, `laughing`, `embarrassed`, `crying`,
+  `angry` and `confused` draw an everyday mood plus effects: heart, star or laughing
+  eyes, blush, sweat, tears, an anger mark, and hearts, sparkles or a question mark
+  floating up. `effects` adds any of them to any mood (`effects={["blush"]}`) or turns
+  them off (`effects={false}`). Flat and cube draw the same glyphs.
+- **Icon rail for `Nav`.** `collapsed` narrows a `Nav` to one icon column: labels,
+  badges and section headings fade out but stay each row's accessible name, and
+  `NavGroup`s close. `expandOnHover` opens it over the page, labels and all, while a
+  mouse rests on it (after a short hover-intent delay) or the keyboard is in it,
+  instead of a tooltip per icon; it keeps its collapsed width in the layout, so the
+  content beside it never moves. Touch never opens it, Escape closes it, reduced
+  motion drops the animation. `expandedWidth` sets how wide it opens (16rem by
+  default).
+- **`feather` on `Mask`.** How much of the radius the edge fades over, from `0`, a sharp
+  circle, to `100`, the soft fade from the centre the mask has always had and still
+  defaults to. With `cursor`, `feather={0}` reads as a lens or a torch carried over the
+  page rather than a glow.
+- **Map.** `@once-ui-system/core/map` draws an interactive map on MapLibre GL with free
+  OpenFreeMap tiles (OpenStreetMap data, no key, no view limit). The basemap follows the
+  theme and takes the page background token. Markers are React content (`MapMarker`, or
+  `MapPin` for price pills and dots), `MapMarkers` renders items from data with optional
+  clustering and an active item, `MapPopup` is a surface card above a point, and
+  `MapCircle` marks an area in metres. `bounds` frames positions; `viewport` /
+  `defaultViewport` / `onViewportChange` control the camera. Keyboard panning and zoom,
+  reduced motion and a fallback without WebGL are built in. `maplibre-gl` (5 or 6) is an
+  optional peer, loaded only when a map renders; `mapStyle` and `transformRequest` plug in
+  a keyed tile provider.
+- **`StyleScope`.** One site's or tenant's look inside another page: a site builder's
+  preview, an agency's site on a marketplace, a venue's pages on a shared app. `config`
+  takes the same keys as the config's `style` (brand, accent, neutral, solid, solidStyle,
+  border, surface, theme, seeds, scales, page and surface backgrounds) and `fonts` a family
+  per role. A seed or scale becomes a custom scheme for that subtree only, in a server-
+  rendered `<style>`, so two scopes with different brands sit side by side and the first
+  paint is right. Recolouring a nested brand, accent, neutral or solid relies on the
+  nested-token fix (#282).
+- **Stacked chat messages.** `stack` on `ChatMessageList` draws a quick run of messages
+  from one author as one block: the bubbles close up and round less where they meet, the
+  name and avatar show once, and the time and status show under the last one. Messages
+  stack when they are next to each other with the same `from`, `name` and `variant`, sent
+  within `stackWithin` minutes (5 by default). `ChatMessage` takes the position as `stack`.
+- **`formatRelativeTime` and relative chat times.** `formatRelativeTime(date, { style,
+  locale, now })` words a time as a distance from now in the reader's language through
+  `Intl`: `"narrow"` (the default) is "now", "2m", "1h", "3d", "2w", then the date;
+  `"short"` and `"long"` add "ago". `relativeTimeRefresh` says when the wording next
+  changes. `timeFormat="relative"` on `ChatMessage` uses it and keeps itself current,
+  with the full time on hover.
+- **Image thumbnails in `ChatComposer`.** A picked or pasted image shows as a thumbnail
+  with a remove button; other files keep their chip.
+- **Cursor presets.** `cursor="soft" | "rounded" | "dot"` on `Flex` and `Grid` restyles
+  every cursor in the subtree: the arrow, the pointer over controls, the I-beam over text
+  fields and the blocked sign over disabled controls. The browser draws them from the
+  stylesheet (`data-cursor`), so they never lag and touch never sees them. `rounded` and
+  `dot` turn light in dark mode. For the whole app, `cursor` in the config's `style` (or on
+  `ThemeProvider`); `ThemeInit` writes it before the first paint. `"system"` turns a preset
+  off below it. Components that point or block (`.cursor-pointer`, `.cursor-not-allowed`,
+  Table rows, Accordion, sliders) read the new `--cursor-pointer` / `--cursor-default` /
+  `--cursor-text` / `--cursor-disabled` properties, so they follow a preset; unset, they are
+  the browser's cursors as before.
+
+### Fixed
+
+- **The cube Mascot talks with one mouth.** While speaking (and laughing) the 3D and flat
+  cube drew the mood's line and a small open ring on top of each other, so a happy smile
+  showed a stray "o" in its middle. The mouth is now one outline that parts from the
+  mood's line into an open mouth with the voice and closes back onto it.
+- **The cube Mascot's open mouth is one unbroken line.** The outline used to start and end
+  at its left corner, which left a visible nick there while it talked; the tube now closes
+  on itself (`tube(..., closed)`).
+- **A `DropdownWrapper` that leads with a search field keeps the caret in it.** With arrow
+  navigation on, the field took focus as the panel opened and lost it a frame later to the
+  selected option, so a site switcher or command menu opened with nothing to type into.
+  The field now keeps focus (taken once it is actually visible: Input's transition keeps it
+  hidden for a frame after the panel is placed), and ArrowDown moves from it into the list.
+- **`DropdownWrapper` opens with a softer grow.** The panel scales from 0.96 rather than
+  0.9 as it fades in, still from the corner anchored to its trigger: a tall panel's far
+  edge travelled about 40px, which read as a pop rather than an opening.
+- **A node as `cursor` on `Flex` and `Grid` works with controls inside.** It stepped in front
+  of buttons, links and inputs: the native pointer showed beside it, and an input lost its
+  I-beam. It now steps aside wherever the native cursor is back, and over a nested element
+  with a follower of its own. It moves without a React render (it re-rendered on every
+  pointer move), no longer flashes in the top-left corner on entry, sits above dialogs and
+  menus, ignores touch input on hybrid devices, and fades in and out (instantly under
+  reduced motion).
+- **`data-brand` on a nested element recolours it on its own.** The brand tokens
+  (`--brand-solid-*`, `--brand-background-*`, `--brand-alpha-*`, the solid border and inset)
+  were resolved on `<html>`, so a section with only `data-brand="red"` kept the page's brand
+  unless it also set `data-theme`. They now resolve again on every nested `data-brand`, in
+  dark and light and under every `data-solid` style. `data-accent` and `data-neutral`
+  get the same (the neutral ramp, `--page-background`, surfaces and contrast solids).
+  The solids follow the nearest `data-solid`, and an element with its own `data-solid` keeps it.
+- **A cursor keyword survives a `style` object.** `Flex`/`Grid` with `style` (or a responsive
+  value that needs the client) dropped `cursor="interactive"` and every other keyword, and a
+  keyword with a class was also written inline, where nothing could restyle it.
+
+## [2.5.0] — 2026-10-21
+
+### Added
+
+- **Animated reactions: `Reactions` and `Reaction`** (Social module). `Reactions` is the
+  row under a post, comment or message: a chip per reaction in use with its count, and an
+  add button that opens every option. Each reaction has its own gesture (a heart beats, a
+  thumbs-up nods, a laugh shakes, fire flickers); a pick plays it, bursts a few copies out
+  of the chip (`effect="float"` lifts one away instead) and rolls the count. One reaction
+  per person by default, several with `multiple`; `value` / `defaultValue` /
+  `onValueChange`. The counts follow the viewer's pick at once and settle on the next
+  `counts` without counting them twice. A reaction can be an app's own image (`src`, such
+  as an animated WebP) with a `motion` of its choice, or drawn by `renderGlyph`. Nothing
+  moves under reduced motion. `Reaction` is one glyph with its gesture, on hover, on a
+  loop or on demand.
+
+- **Apply button in DatePicker's time panel.** "Back to calendar" was the only way out of
+  the time panel and read as going back, not as confirming. Apply calls the new `onApply`
+  with the picked date and time and closes the `DateInput` or `DropdownWrapper` the picker
+  is in; a standalone picker returns to the calendar. Its text is `labels.apply`.
+
+### Fixed
+
+- **DatePicker time panel in a `DropdownWrapper` closed on the stepper chevrons.**
+  DropdownWrapper read any child with a `value` prop as an option and gave it a "pick and
+  close" click handler, which replaced DatePicker's own. Day clicks survived, but the hour
+  and minute chevrons, AM/PM and "Back to calendar" closed the dropdown. Options are now
+  matched by type (`Option`, `data-value`, `role="option"`, a native button). DatePicker
+  also runs a caller's `onClick` next to its own instead of losing its handler to it.
+
+## [2.4.0] — 2026-10-20
+
+### Added
+
+- **`prefix` on `NavItem`.** Any node before the label, such as an `Avatar` on a link to
+  a person or a team. NavItem left out ToggleButton's `prefixIcon` and had only `icon`, an
+  icon name, so a sidebar of people had to pass a hand-built Row as `label`. The prefix
+  sits where the icon would and is hidden from assistive tech, so the link is still named
+  by its label alone.
+
+- **`optimizePackageImports` in the Next.js setup.** The installation page and the agent
+  app starter (`ai/starters/app/next.config.ts`) now set
+  `experimental.optimizePackageImports: ["@once-ui-system/core"]`. Without it, a server
+  component importing from the package root shipped about 110 kB of extra JavaScript on
+  every route of an app migrated to Once UI.
+
+### Fixed
+
+- **The 2.0 codemod no longer hangs on `https://` in JSX text.** In
+  `<Input prefix={<Text>https://</Text>} />` the scanner read `//` as a line comment and
+  swallowed the closing brace, so the Input was skipped; with a second such element later
+  in the file, attribute scanning stopped advancing and the codemod never finished. The
+  shared scanner helpers now skip JSX children as text (so `//`, `/*` and apostrophes in
+  them open nothing) and stop on a value they cannot read instead of looping on it.
+
+## [2.4.0] — 2026-10-20
+
+### Added
+
+- **`"auto"` on every margin prop.** `marginLeft="auto"` pushes an item to the end of its
+  row and `marginX="auto"` centres a block, on Flex, Row, Column, Grid, Text and Heading
+  and in breakpoint objects (`s={{ marginLeft: "0" }}` undoes it). Margins took tokens
+  and numbers only, so this was a type error agents hit in 3 benchmark first attempts,
+  one of them in the 2.1.0 claim run. Foundations adds the `.m-auto`…`.ml-auto` classes
+  and their breakpoint variants; padding and gap have no `auto`.
+
+- **`onSelect` on `UserMenu`.** Called with the `value` of the Option picked from
+  `dropdown`, by click or keyboard: DropdownWrapper's `onSelect`, passed through, so a
+  menu of actions needs no `onClick` on every Option.
+
+- **Validator rules for the type errors agents still make.** `validate-ai-code` now
+  names the fix where tsc only names the rejected prop: CSS alignment names
+  (`horizontal="space-between"`, `"flex-start"`) and a bare `between` on Row or Column
+  (`--fix` rewrites both), `vertical="baseline"`; `href`, `type` and `span` on a layout
+  primitive and `as="form"` with a form-typed handler (use `Card href`, `Card onClick`,
+  `gridColumn`, a native `<form>`); `mobileDirection`-style names and a breakpoint
+  object on a component that takes none (`Button s={{ fillWidth }}`). Over the
+  benchmark transcripts it flags 25 of the 76 Once UI attempts that failed typecheck,
+  and 1 of 185 that passed.
+- **`semantics="radio"` on `SegmentedControl` and `ThemeSwitcher`.** For a choice
+  among settings rather than a view switch: a `radiogroup` of `radio`s with one tab
+  stop, where the arrow keys move and choose. The defaults (`"tabs"`, `"toggle"`)
+  are unchanged.
+- **`labels` on `OTPInput` and `TagInput`, `interactive` on `Chip`, `pauseLabel` and
+  `playLabel` on `Carousel`'s `play`.** The new names and announcements below can be
+  translated. `<Chip interactive={false} onRemove>` makes the label plain text, for a
+  chip whose one action is its removal.
+- **Search, filters and a toolbar on `DataTable`.** `searchable` adds a 32px search
+  field, and a column's `filter: { options }` adds a select beside it; `toolbar` takes
+  your own controls. Both work on DataTable's state or yours (`search`, `filters` and
+  their change handlers). On the client DataTable filters the rows itself; with `count`
+  or `total` it only reports, and `onQueryChange` hands a server table its page, page
+  size, sort, search and filters in one call per change. A query that matches nothing
+  now shows "No results" with a clear button, not "No data available".
+- **Responsive and user-picked columns on `DataTable`, and `hide` on `Table` headers.**
+  `hide: { s: true }` drops a column at a breakpoint and below with CSS, so the server
+  render is already right; tables no longer have to overflow sideways on a phone or
+  wait for JavaScript to hide a column. `columnsMenu` lets readers show and hide
+  columns, and `columnVisibility` lets the app save that choice.
+- **`keepRowsWhileLoading` on `DataTable`.** While a server table loads the next page
+  or search, the last rows stay on screen, dimmed, instead of flashing skeleton rows on
+  every keystroke.
+
+- **Scales per theme: `brandScale={{ light: { … }, dark: { … } }}`.** One ramp served
+  both themes, so an accent tuned for dark (a lime that glows on near-black) read wrong
+  on light, and fixing it took CSS. The flat shape still applies to both; a theme left
+  out uses the other's. `ThemeInit` renders both on the server, keyed off `data-theme`,
+  and a `theme="dark"` subtree gets the dark ramp. Same for `accentScale` and
+  `neutralScale`.
+- **`pageBackground` and `surfaceBackground` in `once-ui.config` `style`.** The light
+  page (off-white) and the filled surface (white) could only change through selector
+  overrides. Each takes a token or any CSS colour, once or `{ light, dark }`, and
+  `ThemeInit` renders it before the first paint.
+- **A weight per font family: `--font-body-weight-strong` and friends.** `.font-strong`
+  and the other weight classes read `--font-weight-display-*` on every family, so bolder
+  body text also changed headlines and labels. `--font-<family>-weight-<weight>` (for
+  `heading`, `body`, `label`, `code`) now changes only that family; unset, each still
+  falls back to the display weight, so nothing renders differently.
+
+- **`Tag` and `Badge` inside a sentence: `as="span"`.** Both rendered divs, which are not
+  allowed in a `<p>`, so a status tag in body copy was invalid HTML and hydration
+  warnings. With `as="span"` every element in them (the Badge arrow included) is a span
+  and they flow inline. The default is still the div, unchanged.
+- **`StatusIndicator` takes theme roles and every palette.** `color` adds `brand`,
+  `accent`, `neutral`, `info`, `danger`, `warning` and `success`, which follow the theme's
+  scheme for that role, plus `rose`, `mint`, `dusk`, `sand` and `slate`. The existing
+  names paint as before.
+- **`NavItem` `badge` takes text.** `badge="New"` prints as given and is read as its text;
+  a number is still a count that hides at 0, prints `9+` above 9 and reads "12 unread".
+- **`titleVariant` on `Accordion` and `AccordionGroup`, and `radius="none"` on
+  `Accordion`.** The title was fixed in `heading-strong-s`, so a FAQ in body type needed a
+  wrapper per title; the default is unchanged.
+- **`text` on `Logo`: a text wordmark.** For a brand with no wordmark file, the name is set
+  in the heading font at the logo's size, after the icon, and names the link. `wordmark`
+  stays an image source.
+- **`toolbar`, `hint` and `sendIcon` on `ChatComposer`: a row of controls under the
+  field.** Chips, a model picker or attachments go on the left after the attach button,
+  a hint such as "Enter to send" and the send button on the right, and `sendIcon` swaps
+  the paper plane. Two agents rebuilding the same assistant app both hand-built this
+  around the composer. Without the new props the composer renders exactly as before.
+- **`scroll={false}` and option `description` on `SegmentedControl`.** In a narrow
+  sidebar the scroll strip clipped the last option behind its Next button; without it the
+  options share the row equally and truncate a label that does not fit. `description`
+  adds a second, dimmer line under an option's label.
+- **`suffixIcon` on `Chip`**, the counterpart of `prefixIcon`, for a chevron on a chip
+  that opens a menu.
+- **AI working states: `WorkingIndicator` and `LogoSpinner`.** `LogoSpinner` is a loader
+  drawn from the Once UI mark: the four tiles part, turn a quarter and click back
+  (`variant="wave"` lifts them one at a time). `WorkingIndicator` puts it next to a verb
+  that changes every few seconds ("Imagining…", "Noodling…", "Kerning…"), with an
+  optional elapsed count and hint. The words are yours to replace through `verbs`, or
+  extend from the exported `workingVerbs`. Both take the brand color, so they follow a
+  chat theme, and both keep signalling under reduced motion without moving.
+- **Voice chat animation: `VoiceVisualizer` and `useAudioLevel`.** An orb (or a compact
+  bar meter) with its own motion for idle, listening, thinking and speaking. Hand it a
+  microphone `MediaStream`, the reply's `<audio>` element or an `AnalyserNode` and it
+  follows the real sound, written to CSS variables each frame so React never re-renders;
+  or pass a `level` your voice SDK already gives you. `useAudioLevel(source)` returns the
+  same 0–1 loudness for your own visuals. Under reduced motion the stand-in animations
+  stop and live audio shows as glow and bar height.
+- **A mascot for assistants: `Mascot` and `mascotLook`.** One soft, single-color shape with
+  eyes that idles, listens, thinks, speaks and sleeps, with eight moods on top (happy,
+  surprised, sad, skeptical, wink, focused, determined). By default the eyes are tiles of
+  the Once UI mark, and while it thinks they turn like `LogoSpinner`. Eyes follow the
+  pointer across a body that reads as round, lids shape each expression, and speaking
+  moves the body (and mouth) with a `level` or the reply's audio `source`. Every part of
+  the look is a prop: color, outline (`roundness`, `aspect`, `bodyPath`), `surface`, eye
+  shape, size and placement, `mouth`, `brows`, `cheeks`, an SVG `accessory` and a
+  `personality`; `seed` (or `mascotLook(seed)`) picks a whole look so each product gets
+  its own character. Under reduced motion it holds still and keeps its expressions.
+
+### Fixed
+
+- **A labelled `TagInput` with tags no longer draws its label over the first tag.** The
+  resting label sat at half the field's height, and the tags make the field taller; the
+  label now floats above while there are tags, as it does once there is text.
+- **Chart `data` takes rows typed with an `interface`, and `readonly` arrays.**
+  `DataPoint[]` has an index signature, which an interface never satisfies, so
+  `data={revenue}` with `revenue: RevenuePoint[]` failed to compile (2 of the 7
+  first-attempt type errors in the 2.1.0 claim run). Every chart reads the rows by key
+  as before.
+
+- **Avatar's `statusIndicator` takes every StatusIndicator colour.** The dot is a
+  StatusIndicator, but `color` named only green, yellow, red and gray, so
+  `{ color: "orange" }` for "away" failed to compile and would have rendered fine.
+
+- **DateRangeInput and DateRangePicker take a `value` with either end left out.**
+  `{}` is no range and `{ startDate }` a range still being picked, so the
+  `{ startDate?: Date; endDate?: Date }` state apps write type-checks. `onChange` still
+  hands back both keys.
+- **`StylePanel`'s rows are radio groups.** Each row of swatches or segments is a
+  `radiogroup` named by the row's label, its options `radio`s: one Tab stop per row
+  instead of one per swatch (over forty in the colour rows), and the arrow keys move
+  and choose. The segmented rows were tab lists with no panels. Looks and `labels`
+  are unchanged.
+- **`OTPInput` reads as one code.** The boxes are a `group` named "One-time code"
+  (or by `aria-label`); the first asks for `autocomplete="one-time-code"`, and a whole
+  code set by autofill fills every box instead of being refused.
+- **`TagInput`'s tags are a list, and Backspace removes the last one.** In an empty
+  field Backspace takes the last tag, and a polite live region says which tag went.
+  A tag's label is no longer a focusable "pressed" toggle that did nothing, and
+  removing a tag puts focus back in the field rather than on the page.
+- **`HoverCard`'s links and buttons can be reached from the keyboard.** The card is
+  in a portal at the end of the page, so Tab from its trigger skipped it, and blurring
+  the trigger closed it. While it is open, Tab now goes from the trigger into the card
+  and on to what follows the trigger; focus moving between the two keeps it open, and
+  Escape from inside the card returns focus to the trigger. The trigger is marked
+  `aria-expanded`/`aria-controls` (or `aria-describedby` for a card of text). Only
+  keyboard focus opens it; the pointer behaves as before.
+- **`Carousel` autoplay can always be stopped (WCAG 2.2.2).** `play={{ auto: true }}`
+  had no pause button and an interval of 0: each `play` field now has its own default
+  (`interval` 3000, `controls` on unless `false`). Autoplay holds while the pointer is
+  over the carousel, stops when keyboard focus comes in (the button then offers Play),
+  and does not start under reduced motion. The
+  carousel is a named group with `aria-roledescription="carousel"`, each slide a
+  "slide" ("2 of 5"), and slide changes are announced politely only while it is not
+  moving on its own.
+- **Text in a `theme="dark"` (or `data-theme`) subtree follows the subtree's theme.**
+  The default text colour was resolved once on `<html>` and inherited, so a dark hero on
+  a light page kept dark text unless every `Text` set `onBackground`. An element with
+  `data-theme` now reads `--neutral-on-background-strong` again, at zero specificity, so
+  colour classes still win. Pages without a themed subtree are unchanged.
+
+- **`Kbd` no longer wraps.** "Ctrl K" in an `Input` suffix broke onto two lines, stood
+  38px tall and stretched a 32px field to 40px. A key cap now stays on one line and keeps
+  its width in a tight row.
+
+## [2.3.0] — 2026-10-19
+
+### Added
+
+- **An app starter agents copy instead of writing: `ai/starters/app/`.** A Next.js App
+  Router setup with Once UI's CSS, fonts, providers and a switchable dark-first theme in
+  the root layout, and a signed-in shell (sidebar with `Nav`, top bar with breadcrumb,
+  ⌘K palette, theme switch and account menu, raised content panel, phone drawer) mounted
+  once for its routes. The product name, user and nav live in one file. `AGENTS.md` and
+  the section `once-ui-init-agent` writes point agents at it. In our own test runs on the
+  same five-route app, agents starting from it used about half the tokens and model calls
+  and passed the same checks, where agents without it locked the theme switch or lost
+  the app fonts.
+
+- **`defaultTheme` on `ThemeProvider` and in `once-ui.config` `style`: a starting theme
+  the visitor can change.** `theme: "light"` forces light and ignores `setTheme`, so a
+  light site with a working theme switch had no clean setup; two agents rebuilding the
+  same app both worked around it. `ThemeInit` paints `defaultTheme` before first load,
+  and choosing "System" with a non-system default is now saved, so a reload keeps it.
+- **`brandScale`, `accentScale` and `neutralScale`: exact brand colours, step by step.**
+  `{ 100: "#…", …, 1200: "#…" }`, the same shape as the native package's. A seed fills
+  the steps a scale leaves out; without a seed the scale needs step 600. `ThemeInit`
+  renders them on the server like a seed. Before this, matching a brand book meant
+  overriding semantic variables in CSS with selector hacks.
+- **Icons `arrowUp`, `arrowDown`, `cube`, `grid`, `newspaper`, `people` and `menu`.**
+
+- **`size="xxs"` on every text field: 32px, the height of a small `Button`.** Field
+  heights run a step above the button scale (`xs` 40px, `s` 48px, `m` 56px), so a
+  dashboard toolbar could not be all small controls: the shortest field was as tall
+  as an `m` Button. `Input`, `Textarea`, `Select`, `NumberInput`, `DateInput`,
+  `DateRangeInput`, `PasswordInput`, `ColorInput`, `TagInput` and `Form` take `xxs`
+  (the type is `FieldSize`, `TShirtSizes | "xxs"`). It is rounded at `radius-m` and
+  insets its prefix and suffix 8px, as a small Button does. A 32px field has no room
+  for a floating label, so at `xxs` the `label` shows as the placeholder (unless one
+  is set) and stays the accessible name through a visually hidden `<label>`. A
+  searchable `xxs` Select opens an `xxs` search field, and `NumberInput` puts its
+  steppers side by side. No touch height floor at this size. Existing sizes and the
+  `m` default are unchanged.
+- **One look for a whole sidebar: `Nav` and `NavSection`.** Wrap NavItems and NavGroups
+  in `Nav` and set `density` (`compact` 32px rows with the small label, `normal` 40px,
+  `spacious` 48px), `variant` (`solid` fills the current row, `subtle` also dims the
+  rest, `minimal` marks it by weight alone) and `rail` (the line down an open group)
+  once. `NavSection` is the small dim heading over a block of rows, with an optional
+  `action`. Rows outside a `Nav` look as before; an explicit `size` on a NavItem still
+  wins. A selected NavItem with an `href` now carries `aria-current="page"`, and a
+  NavGroup header's icon lines up with the NavItems beside it.
+- **Reorderable lists: `Sortable`.** Wrap a list in `Sortable` and each row in
+  `Sortable.Item`, and apply the new order in `onReorder`. A mouse or pen drags after a
+  4px move, a finger after a 200ms press (so taps and scrolling still work), and the
+  keyboard picks a row up with Space, moves it with the arrow keys and drops it with
+  Space. Every step is read out to screen readers, the rows slide aside with the macro
+  transition or jump with reduced motion on, and dragging near an edge scrolls. Lists
+  that share a `group` trade rows through `onMove`; inside a `Nav` the rows keep its
+  spacing, and a closed `NavGroup` opens when a row is held over it. With `handle`, rows
+  drag only from a `Sortable.Handle`. No dependency. Also new: the `grip` icon and
+  `arrayMove`.
+- **A file and folder tree: `FileTree`.** Pass `items` (files, and folders with
+  `children`) and it renders an indented tree that the arrow keys walk: Up, Down, Home and
+  End move through the visible rows, Right opens a folder or steps into it, Left closes
+  it or goes to its parent, and Enter or Space selects. Selection and open folders work controlled (`selectedId`,
+  `expandedIds`) or uncontrolled (`defaultSelectedId`, `defaultExpandedIds`), with
+  `onSelect`, `onExpandChange` and `onItemClick`; `renderItem`, `emptyState`, `loading`
+  and `loadingState` cover custom rows and empty or loading trees. Contributed by
+  @kadrxy.
+- **`Kbar` opens from your own button.** `open` and `onOpenChange` make it controlled,
+  `children` is optional, and ⌘K still toggles it.
+- **Props agents kept reaching for.** `Text` and `Heading` take `flex`, and `xl` to `xs`
+  with `hide`. Width and height props take `"auto"` and `"fit"` (fit-content).
+  `VisuallyHidden as="a"` takes `href`.
+
+### Changed
+
+- **Light mode has depth, like dark mode.** The light page background is now a soft
+  off-white (`neutral-1200`) and surfaces stay white, so cards, dialogs and panels lift
+  off the page instead of relying on borders alone. Neutral text is a step darker
+  (`on-background-medium` 400 → 300, `weak` 500 → 400) and coloured `weak` text moves
+  to 400, so every text token stays above WCAG AA 4.5:1 on the new page colour. Dark
+  mode is unchanged. Light solid fills (buttons, badges, `data-solid="color"` brand
+  solids and `--brand-color-*`) move from step 600 to 500, the same step dark mode
+  uses: white labels on 600 measured 3:1, below AA. In light mode `Input`, `Textarea`
+  and the fields built on them are white with a `neutral-border-strong` edge instead of a
+  gray fill, which read as disabled. Apps that set `background="page"` on white-only artwork may want
+  `surface` instead.
+
+### Fixed
+
+- **`hide: false` at a breakpoint no longer hides anything.** `s={{ hide: open }}` on a
+  `Column` hid it on desktop whenever `open` was false, and `l={{ hide: true }}
+  s={{ hide: false }}` stayed hidden above `l`. A breakpoint's show class now applies
+  only inside its own media query, and is emitted only where a wider breakpoint hides
+  the element.
+- **`Textarea`'s floating label lines up with `Input`'s at every size.** The resting
+  label sat 18px from the top at every size, so it rode low in `xs` and `s` fields and
+  high in `l` and `xl`, and an `xs` textarea was 4px taller than the input beside it.
+- **A `Setting` row with a string label is 4px shorter.** The label was wrapped in an
+  extra span that took the body line height; the row now measures as designed.
+- **`MatrixFx` is no longer blank under reduced motion.** Its first size report cleared
+  the canvas and nothing redrew it; a real resize now rebuilds the grid and redraws.
+- **`ThemeProvider` no longer causes a hydration mismatch.** It read the saved theme
+  during the first render, so anything showing `theme` or `resolvedTheme` rendered
+  differently on the server (React #418). The saved theme is now applied in a layout
+  effect, before paint.
+- **`--font-heading`, `--font-body`, `--font-label` and `--font-code` no longer beat the
+  app's own fonts.** Their placeholder declarations (each `var()` of itself) sat on
+  `:root`, so they won over a next/font class on `<html>` whenever tokens.css loaded
+  later, and the cycle left the font invalid. They are declared on `:where(:root)` now,
+  at zero specificity.
+
+- **A docs page of CodeBlocks could fail hydration at random (React #418).** Prism
+  highlights every `code[class*="language-"]` in the document a frame after it loads
+  unless `Prism.manual` is set first. That pass reached server-rendered CodeBlocks React
+  had not hydrated yet and rewrote their text into token spans, so whichever page lost
+  the race threw a text mismatch. CodeBlock now sets `Prism.manual` before importing
+  Prism and highlights only its own element, as it already did.
+
+- **Types that refused what the components already do.** `SegmentedControl`'s
+  `onChange` is optional, so an uncontrolled control with only `defaultValue` compiles.
+  `StatusIndicator`'s `color` (defaults to `blue`), `Skeleton`'s `shape` (defaults to
+  `line`) and `InteractiveDetails`' `onClick` are optional. `LetterFx`'s `charset`
+  takes a string as well as an array. A `KbarItem` no longer needs `shortcut` or
+  `keywords`. `CursorCard`'s `placement` takes the corners it positions by
+  (`"bottom-right"`, `"top-left"` and the rest) instead of the start/end alignments it
+  never handled.
+
+### Accessibility
+
+- **Dialogs and focus.** In `Dialog` and `FocusTrap`, Tab walks the page order and
+  wraps, and focus moves into a dialog when it opens. The dialog's description is its
+  `aria-describedby`, and `aria-labelledby` is set only when a title renders. The
+  `StyleOverlay` trigger is a real button and its panel a named dialog that takes focus
+  and closes on Escape.
+- **Keyboard.** `InfoTip` and other hover triggers open with Enter and Space;
+  `ContextMenu` closes on Escape; `Select` options show keyboard focus; `NumberInput`'s
+  steppers leave the Tab order (the arrow keys step); the `MediaVideoPlayer` seek bar
+  takes focus, reads the time, and jumps with Home and End; an enlargeable `Media`
+  image is a button; `Swiper` keeps focus when Previous or Next disappears at an end;
+  a scrolling `DataTable` can be focused, as `Table` can.
+- **Announcements.** The first toast is read (the `Toaster` live region exists before
+  it), danger and warning `Feedback` are alerts and the rest polite status, `TypeFx` and
+  `LetterFx` are read once instead of every frame, `Timeline` is a list with
+  `aria-current="step"`, `LinearGauge` and `RadialGauge` are named meters, and
+  CodeBlock's Copy says "Copied".
+- **States.** A disabled `Fieldset` disables the `Checkbox`, `Switch`, `RadioButton` and
+  `RadioGroup` inside it. `ToggleButton` is `type="button"` with `aria-pressed`,
+  `Button` and `IconButton` set `aria-busy` while loading, and a focused field's border
+  darkens. Under `prefers-reduced-motion` transitions end at once (`Spinner` keeps
+  turning).
+- **No shared ids.** `Table`, `Kbar` and the gauges no longer reuse a fixed id when a page
+  has two of them.
+
+### Docs
+
+- **Agents need fewer follow-up reads.** A new `app-shell` task bundle carries the
+  sidebar and header components, `selectNavHref`, `useTheme` and both shell layouts.
+  Bundles include the props of the components they extend and name the task's hooks;
+  the settings bundle adds `Table` and `NavItem`, and `page.md` adds `Switch` and
+  `SegmentedControl`. `IconName` and the breakpoint keys are plain word lists, so every
+  bundle is about 3% smaller. `AGENTS.md` tells agents to read `app/layout.tsx` with the
+  bundle and to open project files by path.
+- **Every example and props table is checked against the code.** `check:docs` in the
+  docs app typechecks the 1,300-odd examples on the docs site, in the agent harness's
+  rules, recipes and gotchas, and in the READMEs against the built package, and checks
+  each props table against `ai/spec.json`. CI runs it before the docs build. It found
+  168 problems, now fixed, among them `Background` opacities written as `0.5` for a
+  0 to 100 scale, `radius="none"` on `Button` where the prop is `corners`, `Timeline`
+  items in a `"completed"` state that does not exist, streaming-chart examples written
+  against Recharts' API, and imports from the pre-package `@/modules` path. Twenty-one
+  hand-written props tables now read their rows from the spec, and `HeadingNav`,
+  `IconProvider`, `Meta`, `Schema` and `OgRoutesProvider` have API tables.
+- **Every docs page is opened in a browser.** `check:render` opens each page of the
+  built site, presses its previews' controls with the clock a day past the build, and
+  fails on anything that throws or logs an error. CI runs it after the docs build. It
+  found the `EmojiPicker` preview throwing on every click (it had no `onSelect`), the
+  date pickers' examples showing the time the docs were built, and the footer's
+  Changelog link logging a CORS error on every page.
+- **The agent spec gives `Flex` and `Grid` their defaults.** `position` defaults to
+  `relative` and `scrollbar` to `minimal`; the spec read the defaults from the wrong
+  file and listed none.
+
+## [2.2.1] — 2026-10-18
+
+### Fixed
+
+- **The `bin` paths are written without `./`.** npm 11 warns that `./scripts/...` bin
+  paths are invalid and may drop them in a later version; `once-ui-init-agent` and
+  `once-ui-validate-ai-code` keep working either way.
+- **`RevealFx` clears its mask timer on unmount.** Unmounting it while `revealed` was
+  animating set state on an unmounted component.
+
+## [2.2.0] — 2026-10-18
+
+### Added
+
+- **`labels` on the date components and `Select`.** `DatePicker`, `DateInput`,
+  `DateRangePicker` and `DateRangeInput` take `labels` for the picker's own words:
+  `previousMonth`, `nextMonth`, `backToCalendar`, `hours`, `minutes`, `am`, `pm`, and
+  `month` and `year`, functions that name the month and year buttons from the value
+  they show. `Select` takes `labels={{ search, clear }}` for its search field and clear
+  button. Omitted fields keep the English default, as `Scroller`'s and `StylePanel`'s
+  `labels` do.
+- **`locale` reaches the time picker.** The header time and the AM/PM control are
+  written in the locale's order and words (`午後01:14` for `"ja"`); `labels.am` and
+  `labels.pm` override the words. Without `locale` the time reads as before
+  (`01:14 PM`).
+- **Mobile-ready core.** Components work on a phone and in a Capacitor app
+  without changing how they look on a desktop:
+  - **Touch targets.** On a coarse pointer, `Button`, `IconButton`, `ToggleButton`
+    (and `SegmentedControl`, `Pagination`), `Checkbox`, `RadioButton`, `Switch`,
+    `Chip`, `NavIcon`, the `Carousel` indicators and the media players' seek bars
+    take taps from at least 44 px around them. The drawn size and layout stay the
+    same; an invisible area catches the tap.
+  - **Safe areas.** New `--safe-area-top`, `--safe-area-right`, `--safe-area-bottom`
+    and `--safe-area-left` tokens read the device insets (0 unless the page sets
+    `viewport-fit=cover`). `Toaster`, `ScrollToTop`, `Drawer`, `Dialog`, `Modal`,
+    `Kbar` and the full-screen `CodeBlock` keep clear of the notch and the home
+    indicator. New `--touch-target` token (2.75rem).
+  - **No sticky hover.** Hover styles only apply where the pointer can hover, so a
+    tapped button no longer stays highlighted. `Carousel` arrows stay visible on
+    tablets, which have no hover to reveal them.
+  - **Hover detection.** `HoverCard`, `Hover`, `CursorCard` and `TiltFx` decide
+    "touch device" from `(hover: none)` instead of touch support, so laptops with
+    a touchscreen keep their hover cards and effects.
+  - **Viewport units.** The enlarged `Media` overlay is pinned to the viewport's
+    edges instead of `100vw` by `100vh`, which ran under a phone's toolbar, and
+    `Mask` sizes its radius in `svh`.
+  - A test (`mobile-ready.test.ts`) fails on unguarded `:hover`, `vh`/`vw` lengths,
+    fixed UI without safe areas, and the touch targets above going missing.
+- **Form building blocks.** `Field` puts a label, hint and error
+  around any control and wires its `id`, `aria-describedby`, `aria-invalid` and
+  `aria-required`; `Input`, `Textarea` and the fields built on them also draw their
+  error styling from it. `Fieldset` is a real `<fieldset>` with a legend and
+  description that lays its fields out like a `Form`. `SubmitButton` shows a spinner
+  and ignores repeat presses while its form submits. `FormErrorSummary` lists every
+  error after a failed submit, takes focus, and links to each field. `Form`'s
+  `onSubmit` can return a promise, which keeps the form pending (`aria-busy`) until it
+  settles, and `pending` sets that state from outside. `useField()` and
+  `useFormPending()` expose both states to custom controls.
+- **Chat building blocks.** Five components for chat interfaces, from the root
+  package: `ChatMessage` (a bubble with its author, time and delivery state;
+  `from="self"` sits on the right, `grouped` lines up follow-ups, a failed
+  message can offer a retry), `ChatMessageList` (a `log` live region that
+  starts at the newest message and follows new content while the reader is at
+  the bottom, with `onReachStart` for loading history), `ChatComposer` (a
+  growing field where Enter sends and Shift+Enter starts a new line, an
+  optional attach button, pasted images, and a send button that waits for an
+  async `onSend`), `TypingIndicator` (three dots in a `status` region that
+  fade instead of bouncing under reduced motion) and `ConversationItem` (an
+  inbox row with the last message, its time and an unread count, as a link or
+  a button). Every label can be replaced for another language. The AI
+  harness's `chat` task lists them first. Docs: Modules → Chat.
+
+- **Design tokens as JSON.** `@once-ui-system/core/tokens.json` is the token cascade as
+  one JSON file (colours as hex, references kept), for native apps and design tools. The
+  React Native preview, `@once-ui-system/native`, reads it; that package ships on `next`
+  only.
+
+### Changed
+
+- **AI harness: one read per task.** `AGENTS.md` routes a task to
+  `ai/bundles/{id}.md`, one Markdown file with the task, its components, rules and
+  gotchas, instead of a JSON bundle plus spec lookups, so an agent reads far less to
+  build a page. The JSON bundles stay.
+
+### Fixed
+
+- **DatePicker: the week starts on the locale's first day.** With `locale="de"` the
+  calendar showed German names in a week that started on Sunday. It now starts on the
+  locale's first day (Monday in most of Europe), read from `Intl`. Without `locale`,
+  and in browsers with no week info (Firefox), it still starts on Sunday.
+
+- **`DateRangeInput` gave both its fields the same `id`**, and with it the same error
+  and description ids. The fields are now `{id}-start` and `{id}-end`.
+- **The date picker's month and year buttons were named by their value alone**
+  ("March", "2026"), which does not say what they do. They are now named
+  "Month: March, change month" and "Year: 2026, change year", which `labels.month`
+  and `labels.year` translate.
+- **`AccordionGroup` with `autoCollapse={false}` never opened.** Each item now keeps
+  its own open state, so several can be open at once.
+- **`Checkbox`, `RadioButton` and `Switch` dropped native input props.** `onChange`,
+  `onBlur`, `onFocus`, `required`, `form` and the rest went to the label beside the
+  control (and nowhere without a label). They now reach the hidden input, clicks and
+  keys fire its `change` event, and blur reports the input as its target, so
+  react-hook-form's `register()` works. `onToggle` is unchanged.
+- **`OTPInput` spread its div props onto every digit field**, after the field's own
+  handlers: a caller's `onChange` broke typing, an `id` repeated on each field, and
+  `className` was dropped. They now go on the wrapper; `onChange` and `onKeyDown`
+  still see each digit's event as it bubbles.
+- **Every `Badge` without an `id` got `id="badge"`**, so badges on one page shared
+  it and each arrow followed the first. Each badge now gets its own.
+- **`width="320px"`, `maxWidth="40rem"` and other px, rem and em strings failed the
+  type and rendered no size.** `CSSUnit` now takes them, on sizes, offsets and
+  `translateX`/`translateY`, at every breakpoint. A number is still rem.
+- **Raw CSS colours on `Background`, `ParticleFx`, the charts and the gauges painted
+  nothing.** `ColorValue` takes `#fff`, `rgb(...)` or `var(...)`, but they were
+  wrapped as `var(--#fff)`. They now pass through as written; tokens resolve as before.
+- **`DatePicker` ignored `defaultDate`.** It is now the starting selection and month
+  when there is no `value`.
+- **`NumberInput` and `DateInput` passed the native `defaultValue` to an input that
+  also had a `value`**: React warned and the default never showed. `NumberInput`
+  takes `defaultValue` as a number (a string is parsed), `DateInput` as a `Date`.
+- **`DateInput` could not be cleared from outside.** Setting `value` back to
+  `undefined` now empties the field.
+- **`Input` and `Textarea` ran `validate` only on a controlled `value`.** An
+  uncontrolled field now validates what was typed.
+- **`EmojiPickerDropdown` closed after a pick only when `open` was controlled.**
+- **`Text`, `Heading` and `Flex` logged prop-misuse warnings on every render in
+  production.** They now warn outside production only.
+- **`Textarea` ignored `error` and dropped the caller's `aria-describedby`.** `error`
+  now marks it invalid and draws the error state, as it does on `Input`, and a
+  description passed in is kept ahead of the error message.
+- **A `Form` nested in another `Form` reset the size** the outer one set; it now
+  inherits it unless it sets its own.
+
+- **AI harness: size props are rem.** A number on `width`, `height`, `minWidth` or
+  `minHeight` is rem, but models write it as pixels, so `width={32} height={32}` around an
+  icon renders a 512 px box. The 2.1.0 benchmark traced most of its lowest-polish pages to
+  this. A new `size.rem` gotcha is in every task bundle, `rules.compact.md` shows the
+  token string (`width="32"`, 32 px) to write instead, and `validate-ai-code` reports an
+  icon, avatar or label box sized with a repeated pixel-like number.
+- **Leaving a breakpoint restores the base value it overrode.** `ClientFlex` and
+  `ClientGrid` cleared each inline value a breakpoint object had written, so
+  `<Flex maxWidth={40} m={{ maxWidth: 20 }}>` lost its 40rem on the way back up; they now
+  put back whatever inline value the breakpoint wrote over.
+- **A translate prop survives a component's own `transform`.** `TiltFx`, `FlipFx`, `Arrow`
+  and `CursorCard` wrote a transform (tilt, flip, scale, cursor position) that replaced the
+  `translate()` from `translateX`/`translateY`; the two are composed now.
+- **`FadingLettersFx` forwards `ref`** to the `Text` it renders. It typed `ref` and
+  dropped it on React 18.
+- **Breakpoint borders apply.** `m={{ borderLeft: "brand-strong" }}` (and `border`, the
+  other sides, `borderStyle`, `borderWidth`) type-checked, stayed on the server and drew
+  nothing, as no border class has a breakpoint variant. They move the component to the
+  client, which writes the colour, style and width inline at that breakpoint.
+- **`Fade` honours `blur` outside pattern mode.** It blurred at a fixed 0.5rem unless
+  `pattern.display` was on.
+
+## [2.1.0] — 2026-10-15
+
+2.1.0 is `2.1.0-rc.0` (below) plus the changes listed here. It is a
+minor release: additive only, nothing removed or renamed.
+
+### Added
+
+- **`Schema` takes `as="aboutPage"` and `as="creativeWork"`**, which emit
+  schema.org `AboutPage` and `CreativeWork`, for about pages and portfolio
+  work. Thanks @timtorres (#162).
+- **Localized month and weekday names in the date components.** `DatePicker`,
+  `DateRangePicker`, `DateInput` and `DateRangeInput` take `locale`, a BCP 47
+  tag such as `"de"` or `"pt-BR"`. The month menu, the calendar heading, the
+  grid's accessible name and the weekday headers use the platform's `Intl`
+  names for it (month names start with a capital), and the two input fields
+  write their dates in it. Without `locale`, or with a tag `Intl` does not
+  accept, everything stays in English as before. Weeks still start on Sunday.
+
+### Changed
+
+- **The harness costs an agent about a third less to read.** In the
+  2.1.0-rc.0 benchmark, agents opened the 131 KB `spec.json` in 50 of 60
+  runs, to look up a type a component slice named but didn't define. Each
+  slice now carries the types it reaches under `types`, and slices point at
+  the new `tokens.json` and `functions.json` instead of the spec; with that
+  change agents opened `spec.json` in 3 of 60 runs. `catalog.json` keeps only
+  each component's purpose, import path and warnings (40 KB → 22 KB); tags
+  and pairings moved to the slices.
+- **One file per task.** `ai/bundles/{id}.json` holds the task with every
+  slice, type, mixin and gotcha it names, so an agent reads one file instead
+  of a dozen slices, each of which it re-sends on every later turn.
+- **Rules and gotchas for the type errors agents make most:** responsive
+  props only on `Flex`/`Row`/`Column`/`Grid`, no `baseline` alignment, the
+  spacing tokens, no `span` or `type` on layout, a native `<form>` around a
+  `Column`, `checked` (not `isChecked`) on `Checkbox`/`Switch`/`RadioButton`,
+  and no `RevealFx` on headlines, prices or KPIs.
+
+### Fixed
+
+- **`ColorInput` with `supportAlpha` shows the colour as hex**, with the
+  opacity after it below 100% (`#31174d 77%`), instead of an `rgba()` string
+  that came out as `rgba(49, 23, 77, 0, 77)` for any opacity below 100%. The
+  value it reports through `onChange` is unchanged. Thanks to @JExcellence
+  (#140).
+
+## [2.1.0-rc.0] — 2026-10-13
+
+2.1 is a minor release: additive only, nothing removed or renamed. The plan
+and its checklist are in [ROADMAP.md](ROADMAP.md).
+
+### Added
+
+- **`List` takes `start`**, the first item's number on a numbered list
+  (`<List as="ol" start={4}>`). It goes to the `ol` element's own `start`
+  attribute and is ignored on `ul`; before, a numbered list could only count
+  from 1.
+- **`Tabs`, `TabList`, `Tab` and `TabPanel`.** Horizontal or vertical tabs
+  matched by `value`, with `tablist`/`tab`/`tabpanel` roles, `aria-selected`,
+  and `aria-controls` and `aria-labelledby` when the panel is mounted. Arrow
+  keys and Home/End move focus, with one tab in the Tab order. Activation is
+  `automatic` or `manual`, controlled or uncontrolled; `keepMounted` keeps
+  hidden panels alive.
+- **`Drawer`.** A modal sheet from any edge (`side`, `size`) on Dialog's
+  pieces: portal, scroll lock, focus trap and an inert page behind. Escape,
+  an overlay click or the close button call `onClose`; focus goes in on open
+  and back on close. `flush` keeps the title for screen readers only.
+- **`VisuallyHidden`.** Content for screen readers only; `focusable` makes
+  it a skip link that appears on focus.
+- **`Breadcrumbs`.** A `nav` landmark with an ordered list, `aria-current`
+  on the last item, separators hidden from assistive tech, links through the
+  adapter, and `maxItems` collapsing the middle behind a button.
+- **`RadioGroup`.** One choice from a set of radios as a single field: a
+  `radiogroup` named by `label` (or `aria-label`) and described by
+  `description`. Controlled with `value`/`onChange(value)` or uncontrolled
+  with `defaultValue`; `name` submits the selected value. Only the selected
+  radio is in the Tab order; the arrow keys move focus and selection, wrapping
+  and skipping disabled radios. Takes `options`, or `RadioButton` children in
+  any layout, plus `disabled` and `orientation`.
+- **`RangeSlider`.** Two thumbs selecting a `[start, end]` range. Each thumb
+  is a `slider` named "Minimum" and "Maximum" (`thumbLabels`) and bounded by
+  the other, so they never cross; `minDistance` keeps them apart.
+  `formatValue` drives the readout and `aria-valuetext`. Arrows, Page Up/Down,
+  Home/End and pointer drag move a thumb; `name` submits both values.
+  Controlled or uncontrolled.
+- **`Slider` works uncontrolled.** `defaultValue` starts it (falling back to
+  `min`); `value` and `onChange` are optional.
+- **`onToggle` receives the new state.** `Checkbox`, `RadioButton` and
+  `Switch` call `onToggle(checked)`, so a setter can go straight in;
+  callbacks that take no argument still compile.
+- **Uncontrolled `Switch` and `TagInput`.** Leave out `checked` or `value` and
+  the component keeps its own state, starting from `defaultChecked` or
+  `defaultValue`. `Checkbox` and `RadioButton` take `defaultChecked` too.
+- **`Dialog` takes `showClose`**, the name `Drawer` uses.
+- **Refs in the types** of `Checkbox`, `RadioButton`, `Switch`, `Dialog`,
+  `Skeleton` and `InteractiveDetails`; `ChipProps` is exported and `Chip`'s
+  ref typed.
+- **`Pagination`.** Previous/next, `boundaries` and `siblings` pages, an
+  ellipsis for each run left out, and optional first/last buttons
+  (`showFirstLast`). A `nav` landmark of real buttons with
+  `aria-current="page"` and a fixed item count, so it never changes width.
+  `page`/`onChange` or `defaultPage`; `total` pages, or `count` plus
+  `perPage`; an optional per-page select (`perPageOptions`); `labels`
+  translates it. `Table` draws its page buttons with it.
+- **`DataTable`.** Typed rows from column definitions (`key`, `header`,
+  `cell`, `sortable`, `sort`, `align`, `width`): sortable header buttons with
+  `aria-sort`, a checkbox selection column with a mixed-state select-all,
+  client-side or server-side (`count`/`total`) pagination through
+  `Pagination`, an `emptyState` slot, and skeleton rows with `aria-busy` while
+  `loading`. Sorting, selection and page each work controlled or
+  uncontrolled.
+- **`useHotkeys` and `KeyTip`.** `useHotkeys("mod+k", fn)` takes combos,
+  alternatives and sequences with exact modifiers, skips text fields,
+  selects and contenteditable unless `allowWhileTyping`, and is safe on the
+  server. `KeyTip` draws a combo as `Kbd` keycaps: ⌘ on Apple platforms,
+  Ctrl elsewhere, spelled out for screen readers.
+- **`@once-ui-system/core/mdx`: one component map for MDX content.**
+  `mdxComponents` and `createMdxComponents(overrides)` render Markdown
+  through Once UI for `next-mdx-remote` (RSC included) and `@next/mdx`:
+  headings get an id and a keyboard-reachable link to themselves, links go
+  through `SmartLink`, images through `Media`, fenced code through
+  `CodeBlock`, GFM tables through `Table`, and the common components are
+  available as tags. Each override is typed against the props MDX passes, so
+  a map needs no casts. A subpath of its own, because it renders code through
+  `/code`.
+- **Ready-made OG route handlers with SSRF protection.**
+  `@once-ui-system/core/next` exports `createOgFetchRoute()` and
+  `createOgProxyRoute()`, each returning `{ GET }`, so
+  `app/api/og/fetch/route.ts` and `app/api/og/proxy/route.ts` are two lines.
+  They answer exactly what `OgCard` and `useOgData` request.
+- **OG route paths are configurable.** `OgRoutesProvider` tells `OgCard` and
+  `useOgData` where the routes live; `Meta.generate` takes `ogRoutes`. The
+  default paths are unchanged.
+- **New options on `handleOGFetch` and `handleOGProxy`:** `blockedDomains`,
+  `isAllowed`, `allowHttp`, `maxBytes`, `maxRedirects`, `cacheControl`,
+  `sameOrigin`, `allowedContentTypes`, `favicon`, and
+  `DEFAULT_OG_IMAGE_TYPES`.
+- **`defineConfig`: the config reaches the providers as written.** It checks
+  values and misspelt keys in `style`, `dataStyle` and `fonts` and keeps
+  literal types, so the sections spread straight into `ThemeProvider`,
+  `DataThemeProvider` and `ThemeInit` with no casts or renamed keys. Also on
+  the dependency-free `@once-ui-system/core/config` entry. The 2.0
+  `ThemeInit` shape still compiles. New types: `OnceUIConfig` and its
+  sections.
+- **A seed colour for custom schemes, with no flash.** `brandSeed`,
+  `accentSeed` and `neutralSeed` generate the whole scheme; `ThemeInit`
+  renders it on the server and `ThemeProvider` follows changes on the client.
+  `customSchemeProperties()` exposes the same values. The rendered rule is
+  scoped to `html:root`, so it wins over a static palette an app sets on
+  `:root`.
+- **`StylePanel` speaks your language.** `labels` translates every string the
+  panel shows or announces: group titles, row labels, option names, and the
+  swatches' accessible names, built by functions so a translation can order
+  its words. It reaches composed parts through `StylePanel.Root`, and a row's
+  own `label` still wins. `ThemeSwitcher`, `ColorInput` and `Scroller` take
+  `labels` for their built-in names too, so the panel's scroll buttons are
+  translated with the rest of it.
+- **`StylePanel` fits a narrow sidebar.** `stacked` puts each row's label above
+  its control, and the option rows take the whole row and drop a button size. A row's own layout
+  props still win, including on a row with a custom colour. Where swatches or
+  options still overflow, the chosen one is scrolled into view, clear of the
+  scroll buttons.
+- **A custom colour on `StylePanel`'s Brand and Accent rows.** `customColors`
+  (or `custom` on `StylePanel.Brand` and `StylePanel.Accent`) adds a swatch
+  for a colour of your own and a field to pick it, reported as `brandSeed` or
+  `accentSeed` through `onChange`. Controlled mode only; render the seed with
+  `ThemeInit` and `ThemeProvider` for a first paint in that colour.
+- **`ThemeSwitcher` can be controlled.** With `value`, it shows that theme and
+  reports a choice through `onChange` without setting or storing it.
+- **Root font size per device and the interactive cursor.** `desktopSize`,
+  `tabletSize`, `mobileSize` and `cursorInteractive` set the attributes
+  `tokens.css` always styled. No defaults, so output is unchanged unless set.
+- **`--brand-color-strong`, `--brand-color-medium` and `--brand-color-weak`:**
+  the brand hue under every solid style. `--brand-solid-*` follows the solid
+  style and is neutral under `solid="contrast"`; these tokens are for
+  anything that must stay brand-coloured, like illustrations and effects.
+- **`Grid` fits as many columns as there is room for.** `minColumnWidth`
+  takes the same values as `minWidth` and renders on the server, replacing
+  hand-written `repeat(auto-fit, minmax(…))` styles.
+- **Effects without a `style` object.** `userSelect`, `blendMode`, `blur` and
+  `backdropBlur` are classes, so `Flex` and `Grid` stay server components.
+  `transform` stays in `style` by design.
+- **An app-shell header height.** The `--header-height` token (56px by
+  default) and `height`, `minHeight` or `maxHeight="below-header"` replace
+  hand-written `calc(100dvh - …)`.
+- **Typed theme props for a subtree.** `theme`, `themeBorder`, `themeSolid`
+  and `themeSurface` on `Flex` and `Grid` write the matching `data-*`
+  attributes, checked against ThemeProvider's values.
+- **`addToast` returns the toast's id**, for `removeToast(id)`, and each
+  toast takes a `duration` (6000 ms by default; `Infinity` keeps it until
+  closed). The countdown pauses while the toast is hovered or focused.
+- **`ContextMenu`'s `contents` prop:** the wrapper adds no box
+  (`display: contents`), so positioned and grid or flex children keep their
+  own layout.
+- **`once-ui-validate-ai-code` checks the Next.js adapter.** In a Next.js
+  app, `LayoutProvider` from the package root renders links and images as
+  plain `<a>` and `<img>`; the new `LayoutProvider.next` rule flags it and
+  `--fix` moves the import to `@once-ui-system/core/next`.
+- **`once-ui-init-agent` writes `CLAUDE.md`** alongside `AGENTS.md` and the
+  Cursor rule, and points Next.js apps at `/next`.
+- **Harness:** slices for `ThemeInit`, `Meta`, `FocusTrap`, `ScrollLock`,
+  `MediaAudioPlayer` and `MediaVideoPlayer`; `list-page` and `editor` task
+  bundles.
+- **The harness knows 2.1's entry points.** `spec.json` lists hooks,
+  functions and constants (`useHotkeys`, `defineConfig`, `mdxComponents`,
+  `createMdxComponents`, `createOgFetchRoute`, `createOgProxyRoute`…) under
+  `functions`, each with its signature and `importFrom`; `manifest.json`'s
+  `imports` lists every entry point with its peer, exports and types. The
+  `Mdx*` elements and `/next`'s `LayoutProvider` have slices.
+- **Harness:** a `docs-page` task bundle; vertical `Tabs` in the settings
+  example; a `Drawer` for mobile nav in the app-shell recipe; "fixed in 2.1"
+  gotchas for Toast, NumberInput, Select, Button triggers and ContextMenu.
+- **The harness costs an agent less to read.** `catalog.json`, which every
+  agent loads first, now carries `iconNames`, and the rules point there. An
+  agent used to open all of `spec.json` (about 37k tokens) to find an icon
+  name: in a benchmark pilot that was most of what it read. `spec.json`
+  keeps the same list.
+- **The harness knows the providers.** `ThemeProvider`, `DataThemeProvider`,
+  `ToastProvider`, `IconProvider`, `AdapterProvider` and `OgRoutesProvider`
+  have slices and catalog entries, and `useToast`, `useTheme`, `useStyle`,
+  `useDataTheme`, `useLayout`, `useIcons` and `useOgRoutes` are in `functions`.
+- **The validator catches more of what the rules forbid.** `as IconName`
+  casts (`Icon.cast`); a `Flex` with no direction, which is a `Row`; raw
+  `data-theme`/`data-solid`/`data-border` where a typed prop exists
+  (`theme.typedProps`); and hex paint in inline SVG (`color.svgPaint`).
+  `--fix` now applies the `Flex` → `Row`/`Column` rename it reports, where
+  the rewrite is safe, and writes typed theme props.
+- **The agent example blocks are current and correct.** They had drifted
+  from their docs copies, and carried bugs an agent would copy: Waitlist1's
+  email check rejected any address containing an "s", Productivity1's
+  divider never painted, Header1's 20 menu items all used the placeholder
+  icon, Dashboard1 cast 12 icon names, Roadmap1's status dots had no colour,
+  and 19 `any` types. Every block in `ai/examples/blocks` is in the manifest.
+- **The validator names a 2.x prop for its 1.x one.** `api.renamed` reports
+  `isOpen`, `isChecked`, SegmentedControl's `selected`/`onToggle`, Tag's
+  `variant` and the other names 2.0 renamed (the codemod's table, minus names
+  2.x reuses). TypeScript reports them as a missing prop or, for `onToggle`, a
+  `ToggleEvent` mismatch, without mentioning the rename.
+- **`Text` and `Heading` take a ref**, typed to the element `as` renders
+  (`HTMLLIElement` for `as="li"`); they stay generic over `as`. `ListItem`,
+  `ShineFx` and `TypeFx` pass theirs on, which they dropped.
+- **`DateRangePicker` takes `autoFocus`**, which focuses its first
+  calendar's start day.
+- **`IconButton` takes `ariaLabel`**, like the other components that take
+  one; a native `aria-label` wins over it.
+- **`InteractiveDetails` takes `labelId` and `descriptionId`**: ids on the
+  label text and the description text alone, so a control can be named by
+  its label without its description or help button.
+
+### Changed
+
+- **A themed logo is one `Logo`.** The agent rules, a gotcha and the
+  validator's `Logo.themes` rule now teach `<Logo wordmark={{ light, dark }}>`
+  (and `icon`, the same way) instead of a `dark` and a `light` copy, and the
+  examples and docs blocks use it. Two copies doubled the elements, left two
+  places to keep in sync and put a hidden link in every focus order; About4
+  and About5 even drew both logos in the light theme. `dark` and `light` stay
+  for a logo meant for one theme only.
+- **The OG handlers only reach public addresses, and connect to the address
+  they checked.** Every redirect is checked again; fetch reads HTML only and
+  the proxy passes raster images only (SVG is opt-in); size and time limits
+  apply; status codes are specific (400, 413, 415, 502, 504); `image` and
+  `faviconUrl` come back as absolute URLs; `http://` is refused unless
+  `allowHttp` is set.
+- **Sass is no longer needed to use Once UI.** Component styles ship
+  precompiled: `dist/` carries a `.module.css` beside every `.module.scss`,
+  and components import the CSS. Any bundler that handles CSS modules works
+  with no setup: Next.js (webpack and Turbopack), Vite, Remotion without
+  `@remotion/enable-scss`, Storybook. The CSS is what your Sass produced
+  before, so pages render the same and your imports don't change. `sass`
+  stays an optional peer; uninstall it if nothing else uses it. Generated
+  class names may change (Turbopack drops `-scss-module` from the prefix);
+  they were never stable. This updates the 2.0.0 note "A bundler is
+  required": a bundler still is, Sass is not.
+- **Twelve components render as server components:** `Line`, `Banner`,
+  `List`, `ListItem`, `InlineCode`, `Skeleton`, `ProgressBar`, `Timeline`,
+  `Badge`, `Tag`, `Avatar` and `User` (and `BlockQuote`, above). Imports are
+  unchanged.
+- **`sideEffects`:** bundlers can drop unused components; stylesheets are
+  kept. The tarball no longer carries a `dist/package.json`, which hid the
+  field from everything in `dist`.
+- **`sharp` is no longer an optional peer.** No source file imports it, and
+  Next.js installs it itself.
+- **`@once-ui-system/core/next`'s index is no longer a client module.** The
+  adapters keep `"use client"` in their own file; imports don't change.
+- **`Select`'s field has role `combobox`** (it was a `textbox`), and options
+  no longer take DOM focus. Tests that find the field by role `textbox`
+  should look for `combobox`.
+- **`DateInput`'s and `DateRangeInput`'s fields have role `combobox`** (it
+  was `textbox`), and focusing them with Tab no longer opens the picker;
+  click, Enter, Space or ArrowDown does. `DateRangeInput`'s fields are named
+  by `startLabel` and `endLabel`.
+- **`ContextMenu`'s `placement` default is declared as `"bottom-start"`**,
+  where the menu always opened; the declared `"bottom-end"` was never
+  applied.
+- **A `DatePicker` given `currentMonth`, `currentYear` and `onMonthChange`
+  keeps that month** when `value` changes, and its grid is named after the
+  month shown ("January 2026") instead of "Calendar".
+- **`Table`'s page buttons are `Pagination`:** first/previous/next/last and
+  ellipsis ranges replace the three-button window, which never showed the
+  current page near the end. Its props, page-size select and "x / y" text
+  are unchanged.
+- **`Slider`'s `defaultValue` is typed `number`.** It was inherited from the
+  input's attributes (`string | number | readonly string[]`) and did nothing;
+  it now sets the starting value, so it takes what `value` takes.
+- **Non-danger toasts are polite `status` regions**, not assertive alerts.
+- **A `multiple` `Select` stays open while you pick.**
+- **`NeutralColor` accepts rose, mint and dusk, and `BorderStyle` accepts
+  sharp.** The CSS already shipped all four. Code that checks one of these
+  values against a narrower `as const` list (`list.includes(value)`) needs
+  the new member or a wider list type.
+- **Charts type `data-viz-style` as `DataStyle | (string & {})`** instead of
+  `string`: autocomplete without narrowing.
+
+### Deprecated
+
+Each keeps working until 3.0.
+
+- **`Dialog`'s `hideClose`:** use `showClose={false}`.
+- **`BaseBreakpointProps`:** use `FlexBreakpointProps`, `GridBreakpointProps`
+  or `TextBreakpointProps`.
+- **`CodeBlock`'s root `highlight`:** set it on each `codes` entry.
+- **`Modal`: prefer `Dialog`** (a note, not a deprecation: Dialog has no
+  `backdrop` slot or full-height sheet yet). The docs of the overlapping
+  scrollers, Badge/Tag/Chip and Tooltip/HoverCard/InfoTip say which to use
+  for what.
+
+### Fixed
+
+- **The default border is `neutral-alpha-weak`.** A bare `border` (and
+  `borderTop`, `borderX`, …) draws `--default-border`, which an app sets in
+  its custom CSS. 2.0 set its default to `neutral-weak` by accident; it is
+  now the translucent `neutral-alpha-weak`, the border the design language
+  uses most. An app that sets `--default-border` itself sees no
+  change. To keep 2.0's solid border, set
+  `--default-border: var(--neutral-border-weak)`. The validator's
+  `border.default` rule, the gotcha and the agent rules name
+  `neutral-alpha-weak` as the default.
+- **Components that drew `neutral-alpha-weak` borders draw the default
+  border**, so they follow an app's `--default-border`: `CodeBlock`,
+  `InfoTip`, `Kbar`, `MegaMenu`, `OgCard`, `ProgressBar`, `Setting`/
+  `SettingGroup`, `SplitView`, `ThemeSwitcher` and `ChartHeader`. With the
+  default token nothing changes; an app that sets the token to another
+  colour sees these borders take it too.
+- **A controlled `StylePanel` changed the page's theme.** With `value` and
+  `onChange`, the Theme row still set the theme through `ThemeProvider` and
+  stored it, and ignored `value.theme`. It now shows `value.theme` (unset
+  reads as `"system"`) and reports a choice as `{ theme }`, like every other
+  row.
+- **`StylePanel` swatches respond to Enter and Space**, not only to a click.
+- **A `className` on a `StylePanel` row replaced the row's own**, which took
+  its divider with it. The two are joined now.
+- **`SegmentedControl` when its options overflow.** The selected option is
+  scrolled into view at mount and on every change, instead of starting under
+  the Next button; only the strip scrolls, never the page. The border goes
+  round all the options rather than stopping at the edge of the strip. And
+  `role="tablist"` (with `aria-label` and the other naming props) is on the
+  row of tabs, not on the `Scroller` around it, which also holds the scroll
+  buttons that a tablist may not own.
+- **`Scroller` and `SegmentedControl` forward their refs.** Both took a `ref`
+  and dropped it.
+- **`DatePicker`'s arrow keys start from a day focused as the grid appears.**
+  A day that took focus after the grid reached the page but before its
+  focus tracking attached, such as a quick Tab as the picker opens, was not
+  recorded, so ArrowDown went to the 7th rather than a week after that day.
+- **Focus traps skip what Tab cannot reach.** `Drawer`, `Modal`, `Dialog`
+  and the other focus traps counted elements under `display: none` and
+  disabled controls. A logo drawn once per theme, with the other theme's
+  copy hidden, became the trap's first element, so focus went nowhere on
+  open and Tab did not wrap.
+- **Escape closes the top layer only.** `Kbar` opened from a `Drawer`,
+  `Dialog` or `Modal` closed both on one Escape. The palette now handles
+  its Escape first and marks it handled; `FocusTrap`, `Dialog` and `Modal`,
+  like `Drawer` already, leave an Escape something inside has handled.
+- **`validate-ai-code` checks every file it is given**, not only the first:
+  `validate-ai-code a.tsx b.tsx` silently skipped `b.tsx`.
+- **A single `Select` shows each option's `prefix`.** It overwrote the
+  prefix with the check-mark slot a multiple Select uses, so a swatch or icon
+  set on an option never showed; a multiple Select now shows it after the
+  check mark.
+- **`OgCard`'s favicon loads through the OG proxy, like its image.** It
+  loaded straight from the host the page named: from the visitor's browser
+  with a plain `<img>`, and not at all through `next/image` unless that host
+  was in `remotePatterns`.
+- **`MobileMegaMenu`'s links are links.** Its sections drew each link with
+  `Option`, a listbox option, so they rendered as `<a role="option">` with no
+  listbox around them: invalid ARIA, and not links to assistive tech.
+- **`SplitView`'s handle shows.** It filled the width of a gutter whose own
+  padding left it zero wide, so only the handle's 2px border drew and its
+  fill never did, not even while dragging. It is a 4px pill now, in both
+  orientations.
+- **The 2.0 codemod moves inline `type` imports.** `import { type ChartMode,
+  DataThemeProvider } from "@once-ui-system/core"` kept `ChartMode` on the
+  root, where it no longer resolves; it now moves to `/data` like the other
+  forms.
+- **`Switch` is one named, focusable control.** `role="switch"` sat on a
+  wrapper that couldn't take focus, so focus landed on an unnamed element,
+  and the `ariaLabel` default ("Toggle switch") overrode the visible label.
+  The focused thumb is now the switch, named by its label; `aria-label` or
+  `ariaLabel` name it only when there is no label.
+- **`Checkbox` and `RadioButton` expose one control.** The hidden input that
+  submits the value was a second, unlabelled control for assistive tech; it
+  is hidden from it now, and the visible control is named by its label alone
+  (not its description and help button). `Checkbox` now submits its `name`
+  and `value` with a form, which it never did.
+- **`Modal` traps and restores focus.** Focus moves into it on open, Tab and
+  Shift+Tab cycle inside it, and focus returns to the opener on close. It is
+  labelled by its title and forwards its ref to the dialog element.
+- **`Kbar` is a dialog with a combobox and a listbox.** Focus stays in the
+  search while the arrow keys move the active option, results are grouped by
+  section, and focus returns to the opener on close. Spaces can be typed in
+  the search again; its scroll lock swallowed them.
+- **`Table`'s sortable headers are buttons with `aria-sort`.** They were
+  clickable `<th>` cells, unreachable by keyboard; the header content is now
+  a button (reachable by Tab, operable with Enter and Space), and the sorted
+  column announces its direction.
+- **`InfoTip` is reachable by keyboard, and hover content closes on Escape.**
+  The icon is a named tab stop whose tip opens on focus and describes it;
+  `HoverCard` and every hover tooltip close on Escape without moving the
+  pointer (WCAG 1.4.13).
+- **`SegmentedControl` no longer points `aria-controls` at panels that don't
+  exist.** A value you pass still applies.
+- **`IconButton` is never named after its icon key** (or "[object Object]"
+  for a tooltip that isn't a string). Its name comes from `aria-label`, then
+  `ariaLabel`, then a string `tooltip`; an unnamed one warns in development.
+- **A native `aria-label` reaches the element it names** on `Spinner`,
+  `Scrubber` and `Switch`, instead of an outer wrapper. `StatusIndicator` is
+  `role="img"`, so its label is announced at all.
+- **`Slider`'s `label` names it.** It was plain text, so a Slider with only a
+  label had no accessible name; an explicit `aria-label` still wins.
+- **A disabled `OTPInput` disables its fields**, which stayed focusable and
+  editable to assistive tech.
+- **`Chip` keeps its own styling when given a `className`.**
+- **`ColorInput` and `DateRangePicker` forward their refs.**
+- **Charts call their hooks on every render.** An empty `ChartHeader`
+  returned before its hooks, so a header that went empty and came back lost
+  its state and left its Escape listener on `document`. `Legend`, `Swatch`,
+  `LinearGradient` and `RadialGradient` read the data theme in a default
+  parameter. Rendered output is unchanged.
+
+- **A toast no longer re-runs consumer effects.** `useToast()` returns
+  stable callbacks, so an effect that depends on `addToast` runs once.
+- **`NumberInput` follows its `value` prop** after mount, without rewriting
+  what the user is typing ("-", "1.", "05").
+- **`Select` closes on pick and stays closed.** Focus returning to the field
+  no longer reopens it.
+- **A `Button` or `IconButton` trigger is reachable by keyboard.** As a
+  `DropdownWrapper` trigger it renders a real button with `aria-haspopup` and
+  `aria-expanded`, and the wrapper no longer nests a `role="button"` around
+  it. A disabled trigger no longer opens its dropdown.
+- **`ContextMenu` is a real menu.** `menu` and `menuitem` roles; arrow keys
+  skip disabled items and wrap; Home and End; Escape closes it and returns
+  focus; near the right or bottom edge it opens towards the screen.
+- **A responsive `Grid` renders on the server.** Any breakpoint prop used to
+  switch it to the client and require a `LayoutProvider`, and breakpoint
+  spacing on Grid did nothing.
+- **`Chip`'s remove button sits beside the chip's control, not inside it.**
+  It was nested in the chip's `role="button"`, and Enter on it clicked the
+  chip. A removable chip is now a box holding both, with the same look;
+  `aria-*` props name the chip's control. `ref` is typed and `ChipProps` is
+  exported.
+- **`TagInput` names each remove button after its tag** ("Remove tag
+  react"), and its field no longer claims a listbox popup (`aria-haspopup`,
+  `aria-expanded`).
+- **`OTPInput`'s field ids are unique per instance**, and its error state is
+  announced: each field is invalid and described by the message.
+- **`Input` is invalid when given `error`**, not only `errorMessage`. It
+  points `aria-describedby` at its message only when the message renders, and
+  keeps the caller's own.
+- **`ColorInput` follows its `value` prop** after mount.
+- **`NavIcon` is a button:** named "Menu" unless given `aria-label`, pressed
+  with Enter and Space, with `aria-expanded` following `active`.
+- **`HeadingLink`'s link is reachable by keyboard and works without a
+  `ToastProvider`.** It is a real link to the section, shared with the `/mdx`
+  headings, and copies the URL (with a toast when there is a provider).
+- **Links run their `onClick`.** `Button`, `IconButton`, `ToggleButton`,
+  `SmartLink` and `Option` with an `href` dropped it, and `MobileMegaMenu`'s
+  links never closed the menu. If a component gets an `href` and an
+  `onClick` meant only for when there is no `href`, pass `onClick` only in
+  that case: it now runs on the link too.
+- **`Media`'s `figcaption` is inside its `figure`.** Layout is unchanged.
+- **`BlockQuote` can hold paragraphs** (its content was a `span`), and it
+  renders as a server component.
+- **An uncontrolled `Checkbox` or `RadioButton` with an `onToggle` changes on
+  screen**, and `defaultChecked` is honoured; both were ignored.
+- **Docs: icons that rendered nothing.** The docs' icon library is
+  type-checked, so an unregistered name fails to compile; the names the
+  blocks and pages used are registered or corrected, and Footer3's social
+  buttons link again.
+- **Docs: proxied OG images on Next 16** (`images.localPatterns`), and the
+  docs render their pages through `createMdxComponents`.
+- **`Select` is an ARIA combobox.** The field is `role="combobox"` and keeps
+  focus; it controls one named listbox and points at the active option with
+  `aria-activedescendant`. Arrow keys, Home and End move the active option
+  and skip disabled ones; Tab closes the list and moves on instead of being
+  trapped. A searchable Select's query field is a combobox with
+  `aria-autocomplete="list"`. No more `role="button"` wrappers or nested
+  listboxes.
+- **`DropdownWrapper` lists are one listbox.** The panel no longer nests a
+  second one, and a `Button` or `IconButton` trigger is never wrapped in
+  `role="button"`, on the server either.
+- **`ContextMenu` applies `fillWidth` and `placement`.** `fillWidth` fills
+  the width of the region that opens the menu; `placement` is measured from
+  the pointer and flips at the screen edges.
+- **`DatePicker`'s calendar is a real grid:** rows of gridcells under named
+  column headers, one Tab stop, and arrow keys that start from the selected
+  day and stay in their own calendar. Its month and year triggers are no
+  longer nested in another control.
+- **A `dual` `DateRangePicker` shows two consecutive months**, including for
+  a range inside one month, and marks the range's ends in whichever calendar
+  shows them.
+- **`DateInput` and `DateRangeInput` are comboboxes that open a dialog.**
+  The field is no longer nested in `role="button"` wrappers: it has
+  `aria-haspopup="dialog"`, `aria-expanded` and `aria-controls`, and the
+  picker is a dialog named after the field. Click, Enter, Space or ArrowDown
+  opens it with focus on the selected day; Escape or a pick returns focus to
+  the field. `DateRangeInput` forwards its ref.
+- **`DatePicker` no longer takes focus by itself.** It focused its selected
+  day on mount and on month changes; now only `autoFocus` (as `DateInput`
+  uses it) moves focus in.
+- **A `dual` `DateRangePicker`'s month and year lists move both
+  calendars.**
+- **`DropdownWrapper` lists are named after their trigger** ("Sort by"),
+  not "Dropdown options".
+- **`Grid inline` renders an inline grid.** `.display-inline-grid` had no
+  rule, so the grid stayed a block.
+- **`translateX`/`translateY` read spacing tokens** on `Flex`, `Grid`,
+  `Text` and `Heading`: `translateY="16"` wrote no transform. A number is
+  still rem and a CSS unit is written as given.
+- **A responsive `Grid` applies a breakpoint `width`, size or numeric
+  spacing**, as `Flex` does; a t-shirt `maxWidth` in a breakpoint object now
+  applies on both.
+- **`Grid`'s `rows` sets the rows.** It had no class and reached the DOM as
+  a `rows` attribute; it is now a class at the base and every breakpoint,
+  like `columns`, and renders on the server.
+- **`Text` and `Heading` apply their display props.** `pointerEvents`,
+  `overflow`, `position`, `zIndex`, `gap`, offsets and
+  `translateX`/`translateY` reached the DOM as attributes; they are classes or
+  inline values now, as on `Flex`. `inline`, `hide`, `dark` and `light` no
+  longer leak, and `opacity={0}` and `zIndex={0}` apply.
+- **The `72` spacing step works as a size.** `width="72"` and the other size
+  props (`minColumnWidth` and `MasonryGrid`'s `gap` included) rendered
+  nothing; every size reads one list of the scale now.
+- **`Flex` breakpoint offsets.** `m={{ top: "16" }}` writes `.m-top-16`; a rem
+  or CSS-unit offset at a breakpoint is applied inline on `Flex` and `Grid`
+  (on the client, under the `LayoutProvider` every app already has).
+- **`overflow="clip"` and `"visible"` apply.** They type-checked but had no
+  class behind them. An `xl` overflow on `Flex` now applies at `xl` widths.
+- **The validator's icon check runs.** It read a field the spec never wrote;
+  it now reads `spec.iconNames`, checks only props typed `IconName`, and
+  accepts names an app registers.
+- **Validator false positives** on a `Flex` that changes direction at a
+  breakpoint, multiplier `speed` props, `Card` with spread props, and
+  file-wide `position` and `zIndex` matches.
+- **`catalog.json` purposes** read "X component" for every entry; each has a
+  written purpose again, and a missing one fails the build's tests.
+- **`once-ui-init-agent` appends to an existing `AGENTS.md`** without
+  `--force`.
+- **The docs' `ThemeInit` example set the chart mode from the chart variant**,
+  which matched no style; `dataStyle` now passes `mode`.
+- **Docs:** stylesheet imports, the dependency list, breakpoints,
+  `LayoutProvider` from `/next`, and broken links.
+
+### Internal
+
+- **The AI spec builds on Windows.** The generator compared TypeScript's
+  forward-slash file names with a backslash `src` path, so on Windows no file
+  counted as the package's own and `pnpm build` (and so `npm publish`) wrote
+  an `ai/spec.json` with no `types`, which silenced the validator's checks that
+  read them.
+- **Tests pass on a Windows checkout.** A `.gitattributes` checks text files
+  out with LF on every platform, where Git for Windows' `core.autocrlf` wrote
+  CRLF and the tests that read generated stylesheets and token snapshots
+  failed; the `sideEffects` test matches `src/test/` with either separator.
+- **CI on every pull request.** GitHub Actions builds, typechecks and tests
+  the package on each pull request and push to `main`, builds the docs app
+  against it (which prerenders every component page on the server), and runs
+  `check:package` as an advisory step.
+- **A lint no-regression gate.** `pnpm lint:gate` fails when Biome reports
+  more errors than `lint-baseline.json` records. The count only goes down:
+  `--update` records a lower number and refuses a higher one. It stands at
+  153, from 519 before 2.1: a mechanical format and import-order sweep
+  (no behaviour change) took it to 173.
+- **Accessibility assertions in tests.** `src/test/axe.ts` runs axe on a
+  rendered tree; every component added or changed in 2.1 is tested with it.
+- **The docs blocks use 2.x syntax and fit a phone.** 138 blocks drop
+  props that restate defaults and use `fill`, `center`, `Row`/`Column` and
+  typed theme props, with no visible change; ten overflowed or overlapped at
+  390px (Contact3/4, Cookie1/2, Careers3, Hero3, Hero12, Plans7, Header4 and
+  the blocks built on it, Table1 and Dashboard1). Ten logos that did not
+  exist (About5, Bento1, Bento2, Footer6, Testimonial8) show the Once UI
+  wordmark as a placeholder, and the AudioPlayer demo plays a one-minute
+  loop instead of a missing file.
+- **The build no longer downloads emoji data.** It used the committed
+  `src/data/emoji-data.json` only when gemoji's moving `master` could not be
+  fetched, so two builds minutes apart could differ, and `npm publish`
+  (whose `prepack` builds) could ship a set no test had seen. The committed
+  file is used as it is; `pnpm refresh-emoji-data` refetches it on purpose.
+
+## [2.0.0] — 2026-09-25
+
+Once UI 2.0 is on `latest`:
+
+```bash
+npm i @once-ui-system/core
+```
+
+2.0 is the release where Once UI becomes a system an AI can build with
+correctly. One spec drives the docs, the `ai/` harness, the validator and the
+codemod, so what an agent reads is what the package accepts. Utilities and
+responsive classes are generated, and breakpoints are fixed, so CSS and
+JavaScript agree on every width and a responsive `Flex` can be a server
+component.
+
+**Upgrading from 1.8.x.** [MIGRATING.md](MIGRATING.md) is the checklist, in the
+order that keeps the app building: run the codemod, install the peers for the
+subpaths you use, fix what the codemod reports, import `LayoutProvider` from
+`@once-ui-system/core/next` in a Next app, check the browser floor (Chrome 111,
+Safari 15.4, Firefox 113), drop custom breakpoints, and re-shape any
+`ScrollContainer`. Most apps finish in the first two steps.
+
+**What is in it.** 2.0.0 is `2.0.0-alpha.3` plus the entry below. The four
+alpha entries that follow are the full record of what changed from 1.8.x and
+why; read them together, oldest first. Two things are by design rather than
+open questions:
+
+- **A bundler is required.** Components import their own `.module.scss` files,
+  so Once UI runs in apps built by a bundler that compiles Sass modules
+  (Next.js, Vite and the like), as it always has. Plain Node `require`/`import`
+  of the package is not supported.
+- **`@once-ui-system/foundations` stays private.** Core inlines its SCSS and CSS
+  at build time, so there is nothing extra to install.
+
+### Added
+
+- **`sizes` takes the `Media` shorthand everywhere it reaches `Media`.**
+  `<Media sizes={1200}>` stands for `(max-width: 1200px) 100vw, 1200px`, but
+  `Carousel` (its slides and `thumbnail.sizes`), `Swiper`, `OgCard`, `Book` and
+  `MediaUpload` typed their `sizes` as `string` while passing it straight to
+  `Media` — so the number worked at runtime and failed to type-check. They take
+  `string | number` now, resolved by `Media` as before. The `ai/` harness lists
+  the wider type, so an agent validating against the alpha.3 harness would
+  reject the shorthand on these five.
+
+## [2.0.0-alpha.3] — 2026-09-24
+
+The fourth alpha preview, on the same **`alpha`** dist-tag. `npm install
+@once-ui-system/core` still resolves the 1.8 line; asking for this one stays
+deliberate:
+
+```bash
+npm i @once-ui-system/core@alpha
+```
+
+Classified as a pre-release of the 2.0 major. No prop, export or token is added,
+removed or renamed; everything here is a fix, plus an internal import refactor
+that leaves the public entry points as they were. Two fixes change rendered
+output for code that already works around the old behaviour, which is worth
+checking on upgrade: a titled `BarChart` no longer grows past its `height` (its
+card is `height` tall, like the other charts, with the plot fitting under the
+header), and a caller that padded a chart's `height` to make room for the
+header will now get a taller plot rather than a clipped one.
+
+The `ai/` harness is regenerated for the version; no component's props changed.
+
+### Changed
+
+- **Core's own files import from the file that defines a symbol, never from a
+  barrel.** 195 imports across 160 files went through a directory `index.ts`
+  (`"."`, `"../components"`, `"../../contexts"`…), so importing any one
+  component pulled in every module that barrel re-exports. In a Next.js app
+  that put all 130 client components on every page, the 150 KB emoji dataset
+  among them. The public barrels are unchanged, and
+  `import { Button } from "@once-ui-system/core"` works exactly as before. What
+  this unlocks is per-component imports
+  (`@once-ui-system/core/components/Button`), which now ship only what they
+  name: on the Once UI site they cut the JavaScript every page loads from
+  542 KB to 472 KB gzipped. A test fails if an internal barrel import comes
+  back.
+
+### Fixed
+
+- **A chart's plot fits inside its card again.** `LineChart`, `BarChart`,
+  `LineBarChart` and `PieChart` used `height` twice: as the card's height and
+  as a `min-height` on the plot row under the header (added in 1.8.0). A chart
+  with a title therefore asked for header + `height` inside a card that is
+  `height` tall, and the plot hung past the card by the header's height —
+  measured at 45px with a title and 65px with a description — clipped by its
+  own `overflow: hidden`, with the axis labels and legend spilling onto
+  whatever came next. `BarChart` grew instead, because its card used
+  `minHeight`. `height` now sizes the card once, on all four, and the plot
+  takes the height the header leaves.
+
+- **Numeric `padding` and `margin` no longer vanish on the client.** `Flex`,
+  `Grid`, `Text` and `Heading` wrote a number as the CSS shorthand next to the
+  four longhands, leaving the unset longhands `undefined`. The server skips
+  those, so server-rendered pages were fine. On the client React writes an
+  undefined longhand as `''` after the shorthand, which clears it:
+  `<Column padding={1}>` mounted in the browser had `style=""`, and a box that
+  went from four numeric sides to one `padding` lost all of it on the update.
+  Found in Aveiro's editor, where a block's spacing collapsed as soon as all
+  four sides matched. Numbers are now written as the four sides, resolved
+  side → axis → all, the same precedence as before. Tokens are unchanged:
+  they are classes, not inline styles.
+
+- **A clickable `Card` runs its handler once, and its label names the link.**
+  `onClick` was set on both the card's button and the surface inside it, so
+  a click on the content bubbled and ran the handler twice; a card that
+  toggled its own `selected` state flipped and flipped back. The handler now
+  sits on the focusable element only (through `onLinkClick` for an `href`
+  card). `aria-label`, `aria-labelledby` and `aria-describedby` also went to
+  the inner surface, leaving the link or button named by whatever text the
+  card contained; they now land on the element that takes focus.
+
+- **`FadingLettersFx` no longer stalls while the page is busy.** It animated
+  `filter: blur()`, which browsers cannot hand to the compositor (a changing
+  blur radius moves pixels), so the letters ran on the main thread and froze
+  mid-blur whenever script ran during their entrance: hydration, a chunk
+  loading, a WebGL context starting. The blur is now fixed, on two copies of
+  each letter drawn with `::before` and `::after` from a `data-letter`
+  attribute, and only `opacity` and `transform` animate, so the whole effect
+  runs on the compositor. The look is the old curve, sampled: a heavy blur,
+  a light one, then the sharp letter, on the same timings and delays. Each
+  letter now wraps its character in an inner span; the copies are generated
+  content, so the text is still in the DOM once.
+
+- **A collapsed `ThemeSwitcher` no longer loads open and then snaps shut.**
+  The server cannot know the visitor's theme, so the group used to render
+  with every option showing and collapse on hydration. It now renders at its
+  one-option size, invisible, and appears once the active option is in place,
+  with the swap unanimated. Touch devices, which always show every option,
+  are unchanged.
+
+- **`ThemeSwitcher direction="column"` reserves the space it draws.** The
+  anchor was a hard-coded 40px square, but the options are 32px `IconButton`s
+  in a 1px border: 34px. The extra 6px pushed the control off-centre in its
+  row. The anchor, and the caps the options open and close to, now follow
+  the button size.
+
+- **`MegaMenu` works from the keyboard.** A group with a dropdown and no
+  `href` rendered its trigger as a `div`, so it was not in the tab order at
+  all, and every panel opened on hover only. Those triggers are now buttons
+  with `aria-expanded` and `aria-controls` that toggle on Enter or Space; a
+  trigger that is also a link opens its panel on keyboard focus. Tab moves
+  from an open trigger into its panel and on to the next trigger, Shift+Tab
+  comes back, ArrowDown opens a panel and the arrows move within it, and
+  Escape closes it and returns focus to the trigger. Pointer behaviour is
+  unchanged.
+
+## [2.0.0-alpha.2] — 2026-09-23
+
+The third alpha preview, on the same **`alpha`** dist-tag. `npm install
+@once-ui-system/core` still resolves the 1.8 line; asking for this one stays
+deliberate:
+
+```bash
+npm i @once-ui-system/core@alpha
+```
+
+Classified as a pre-release of the 2.0 major. The `ScrollContainer` tile
+defaults are removed rather than deprecated, which is a major-criteria change
+("removing or renaming components, props, tokens, or CSS classes", and
+"changing default behavior in ways that alter rendered output for existing
+code") — it rides the 2.0 line rather than a minor, and existing carousels need
+their shape passed in explicitly. Everything else here is additive or a fix.
+
+Per the AI-consumer rule, `ai/manifest.json`, `ai/catalog.json` and
+`ai/spec.json` are regenerated in this release: `ScrollContainer` gained six
+props since alpha.1, so an agent validating against the previous harness would
+have rejected all of them.
+
+### Added
+
+- **`ScrollContainer` moves a track instead of scrolling a box.** A scroll box
+  cannot do any of the three things asked of a carousel: its contents are
+  clipped at its own edge by definition, so no tile can peek past it; its
+  scroll range has two hard ends, so there is nowhere for a wrap-around to go;
+  and the browser owns the easing, so a drag can only set `scrollLeft` and
+  hope. The track is now laid out once and moved with a transform, which
+  removes all three limits at once and makes the motion a CSS transition the
+  component controls.
+
+  New with it: `infinite` continues past the last item into the first in the
+  same direction, with no rewind and both controls always enabled; `markers`
+  (`true`, `"top"` or `"bottom"`) shows how many items there are and which is
+  in front, and jumps to one when pressed; `draggable` (on by default) has the
+  track follow a mouse, pen or finger, claiming a gesture for one axis on its
+  first movement so a vertical swipe still scrolls the page, and swallowing the
+  click at the end of a drag so it does not also open the tile; `step` sets how
+  many items a control press moves; and `clip` keeps everything inside the
+  component's own box for callers who want the old edges back.
+
+  **This changes existing carousels.** Tiles used to arrive with
+  `aspectRatio="3/4"`, `border`, `radius="xl"` and a width range already set,
+  so anything that was not a tall bordered portrait card had to override four
+  properties before it could begin. A tile now contributes only what a track
+  item cannot do without — refusing to shrink, and a `minWidth` floor so a
+  carousel of fill-width content has something to fill. Shape and size come
+  from the caller, through the same rest props that always landed on the tile.
+  Because the browser is no longer doing the scrolling, a trackpad's horizontal
+  gesture no longer moves the track, which is why drag is on by default and the
+  controls are never hidden.
+
+- **`ThemeSwitcher collapsed` can open downwards, with `direction="column"`.**
+  The collapsed group grew sideways, in the flow of the layout, which works
+  where it has room beside it and not where it has neighbours: the group
+  widening pushes them along, and the option the pointer is resting on slides
+  out from under it. In a header that is every time it opens.
+
+  `direction="column"` splits the control into an anchor and a panel. The
+  anchor is what the layout sees and stays the size of one option however many
+  are showing; the panel is taken out of the flow and hung from the anchor, so
+  it grows over the page instead of through the header. Measured in a 56px
+  sticky header with neighbours on both sides: nothing beside it moves and the
+  header does not change height.
+
+  It opens downwards rather than centring on the active option. An open panel
+  is 124px against a 56px header, so anchoring it on the second or third option
+  would put its top edge 34px and 76px above the viewport.
+
+  The active option leads. In fixed order the panel's first slot belongs to
+  whichever theme is listed first, so the icon already under the pointer
+  changes identity as the panel unrolls — hover the moon and the computer
+  arrives under your cursor, and a click without looking sets the wrong theme.
+  Leading with the active option keeps the invariant that the theme in force is
+  the one in the anchor slot, before opening and after choosing. The reorder is
+  done in the markup rather than with CSS `order`, so tab order and visual
+  order stay the same thing, and stable keys mean a focused button keeps focus
+  across the move.
+
+  `direction` defaults to `"row"` and is ignored when the group is not
+  collapsed, so nothing that already uses `ThemeSwitcher` changes. Devices that
+  cannot hover still get the group always open, and there it takes its space in
+  the layout rather than hanging over what is underneath.
+
+- **`ScrollContainer` takes `active` and `onActiveChange`.** `active` brings an
+  item to the front by its index, by the shorter way round when `infinite`;
+  `onActiveChange` reports the item that arrived there, however it got there.
+  Together they let something outside the component stand in for the markers —
+  a row of names, a set of thumbnails, a table of contents — which previously
+  was not possible at all: the index was internal state, and the forwarded ref
+  was never attached to anything, so there was no handle on the run from
+  outside.
+
+  `active` is a command rather than a lock, and the effect that reads it is
+  keyed on the prop alone. Were it to depend on where the run actually is,
+  every drag would be undone a frame after it ended by an effect insisting on
+  the last value the caller passed, and the run would fight the pointer. An
+  `active` that never changes therefore does not pin the run in place;
+  `onActiveChange` is how a caller stays level with it.
+
+- **`ScrollContainer` takes `proximity`.** Tiles scale by their distance from
+  the one in front, so the run has a focus that moves with it. It is continuous
+  rather than stepped — the scale is computed from the live drag offset divided
+  by the tile pitch, so halfway through a drag the outgoing and incoming tiles
+  are the same size and the emphasis crosses between them as the pointer moves,
+  instead of snapping when the track settles. `true` is a gentle default; a
+  number is how much smaller each whole step away is, as a fraction. Tiles stop
+  shrinking at 72% so a long run does not trail off into nothing. Off — the
+  default — a tile carries no transform at all, not `scale(1)`, so it never
+  becomes a containing block for anything the caller positioned inside it.
+
+- **`Form`, a layout for a set of fields.** `density` carries the gap and the
+  grouping as one decision, because they are one decision: `"stacked"` fuses
+  the fields into a single control, with the borders of neighbours collapsed
+  onto one hairline and only the outside of the group left round, while
+  `"tight"` and `"spacious"` are ordinary gaps that leave every field its own
+  border and radius. `columns` lays the fields out in a grid and takes a
+  per-breakpoint map; a field can occupy more than one column with `span`;
+  `size` sets the size of every field in the group, and a field that sets its
+  own still wins.
+
+  The corners are the point. Passing `corners="top" | "none" | "bottom"` down
+  a stack is positional bookkeeping that breaks the moment a field is
+  conditionally rendered or reordered — hide the third of four and the group
+  ends on a square edge. `Form` derives them from the children that actually
+  rendered and from where each one lands in the grid, so a ragged last row, a
+  spanning field and a column count that changes with the viewport all come
+  out right. A focused field is lifted above its neighbours, and nothing in
+  the component clips, so the focus ring stays whole.
+
+  `Input` and `Textarea` gained a `span` prop, read by `Form` and stripped
+  before it reaches the DOM, and mark their bordered box with
+  `data-surface="field"` so `Form` can reach the element that actually carries
+  the radius. Children that do not mark a surface are laid out and spaced but
+  keep their own corners.
+
+- **Docs pages say whether you can install what they describe.** A `status`
+  frontmatter field — `"alpha"` or `"unreleased"`, absent meaning available on
+  `latest` — puts a tag in the sidebar and a notice under the page title.
+  `VersionBanner` already said the site documents 2.0, but it says one thing to
+  every page, and it cannot tell "shipped in the alpha" from "not published
+  anywhere yet": it told both to install `@alpha`, which is wrong for the
+  second. It is also above the sidebar, far from where someone arriving from a
+  search result starts reading.
+
+  Deliberately a separate axis from `navTag`. That one says *when something
+  changed* and decays on a timer — grey at 30 days, gone at 60 — while
+  availability stops being true only when a release makes it false, and a page
+  can be both new and unreleased at once. Where both apply the sidebar shows
+  availability, because in a column that narrow it is the more useful of the
+  two.
+
+  Applied to the six pages documenting components that do not exist in 1.8.5:
+  `Book`, `Effect`, `InfoTip`, `NavItem`/`NavGroup`, `Scrubber` and `Setting`,
+  verified against the published dist-tags rather than assumed. The media
+  players page is left alone on purpose — its video half shipped in 1.8.5 and
+  only the audio player is new, so the page as a whole is not alpha-only.
+
+- **`Feedback` takes an `icon`.** It was locked to the variant's glyph, with
+  `showIcon` only able to turn it off. `icon` accepts any `IconName`, so a
+  custom name registered through `IconLibraryOverrides` works here too; leaving
+  it out keeps the variant's icon.
+
+- **`Placement`, `Side` and `Alignment` are exported from the package.** The
+  `placement` prop of `Select`, `UserMenu`, `ContextMenu`, `CursorCard`,
+  `DropdownWrapper` and `Animation` is now typed by our own union rather than
+  the positioning library's. Previously all six emitted
+  `import { Placement } from "@floating-ui/react-dom"` into their published
+  declarations, so consumers resolved a dependency of ours to type a prop of
+  ours, and changing positioning library would have been a breaking release
+  over twelve string literals. The type is structurally identical, so existing
+  code keeps compiling; `@floating-ui/react-dom` is unchanged and still does
+  the positioning.
+
+### Changed
+
+- **`Particle` is now `ParticleFx`.** It was the one ambient effect without the
+  `Fx` suffix, although `Effect` switches between it and `BlobFx`, `MatrixFx`,
+  `WeatherFx` and `CelebrationFx`, and its docs page sat under Components. The
+  page is now `/effects/particleFx`, and `/components/particle` redirects there.
+  `Particle` is still exported as a `@deprecated` alias of the same component,
+  so nothing breaks; it is removed in 3.0. The AI harness lists only
+  `ParticleFx`, so generated code uses the new name. `Effect`'s
+  `type="particle"` and `particle` props are unchanged: they are effect keys,
+  like `blob` and `matrix`.
+
+- **`SettingGroup` is one surface.** The header sat on whatever was behind it
+  while the body it reveals painted `surface` on top, so opening a group read
+  as a second panel stacked inside the first, and the border around it was the
+  default opaque one. The background moves to the group itself, the body stops
+  painting its own, and the outer border is `neutral-alpha-weak` — which is
+  what a group nested in a panel needs, since it sits on whatever the panel is
+  rather than on one assumed backdrop. The hairline between the header and the
+  body stays: it is what separates the setting from the settings it gates.
+
+- **A dropdown opens on the option it is already showing.** Every
+  `DropdownWrapper`-based list — `Select`, `DatePicker`'s month and year
+  selectors, an org switcher — opened focused on its *first* option regardless
+  of the current value. On a long list that hides the answer: the year picker
+  opened on 2001 with the chosen 2025 scrolled out of sight, and the arrow keys
+  then walked from the top rather than from the selection. The panel now opens
+  on the option marked `aria-selected="true"`, scrolled into view within the
+  panel and never by scrolling the page, and falls back to the first enabled
+  option for a list with no selection — a menu or a command palette behaves
+  exactly as before. A selected option that is disabled is skipped, and a panel
+  that leads with something other than its list, such as a searchable
+  `Select`'s query field, still opens on that.
+
+  `Option` already sets `aria-selected` from its `selected` prop, so lists
+  built from `Option` need no change.
+
+- **`useArrowNavigation` no longer writes `aria-selected`.** It set the
+  attribute from `focusedIndex` on every keystroke, so a screen reader
+  announced whichever option the arrow keys had reached as the selected one and
+  the option the user had actually chosen as unselected. Highlighting is
+  `data-highlighted` and the `highlighted` class, which are unchanged;
+  `aria-selected` is the consumer's to author, and is now also what a panel
+  reads to decide where to open. Anything that was relying on the hook to
+  write it — the pattern the hook's own docs showed — should set it from its
+  own selected value instead.
+
+### Fixed
+
+- **A `ScrollContainer` drag follows the pointer.** The effect that restores
+  the track's transition one frame after the wrap-around jump ran for any
+  `animated === false`, and a drag is the other thing that sets it false. One
+  frame into a drag the transition came back on, so every offset update after
+  that was eased over `--transition-duration-macro-long` instead of applied:
+  the track crawled toward the pointer rather than following it. A 164px drag
+  moved the track 46px, in increments of 40, 1, 2, 3. It read as sluggish
+  rather than broken because the release is computed from the raw pointer
+  delta, not from where the track had got to — the landing was right and the
+  journey was not. Tracking is now exact 1:1.
+
+- **A `MegaMenu` panel is measured at the width it is displayed at.** The
+  dropdown was measured in one pass: every `fillWidth` child forced to
+  `max-content`, the panel set to `width: max-content`, then both the width and
+  the height read from that single unconstrained layout. The height that came
+  back described a layout the panel is never shown in, and since the box is
+  locked to it and clips, whatever the content grew by came off the bottom —
+  measured at 14px on a two-column panel, enough to slice the last row. The
+  width is now measured first, applied with the children restored, and the
+  height read after the reflow. The open animation's `scale(0.9)` is switched
+  off for the measurement too, so the numbers describe the panel's layout
+  rather than whichever frame of the transition the measuring pass landed on.
+
+- **A labelled `Textarea` no longer grows a scrollbar when you focus it.** The
+  floating-label rule set `padding-top` on the value for every field but
+  `padding-bottom` only on non-textareas, so a textarea's padding stopped
+  adding up to its box. Focusing one floated the label, moved the top padding
+  from the centring inset to the label offset, and left the bottom where it
+  was: at size m the content needed 51.7px of a 46px box. The box cannot
+  absorb it — the textarea is stretched to `--fld-h` by its parent — so the
+  extra came off the bottom and the field scrolled its own single line, with a
+  scrollbar down the side. Measured at every size: xs through l overflowed by
+  up to 5.7px, and xl by 1px, which is still enough for a scrollbar.
+
+  The exclusion is gone, so a floating label sets both paddings on a textarea
+  exactly as it does on an input. Nothing without a label changes, because the
+  rule only applies once a label is actually floating: a single-line textarea
+  still centres its one line at every size, and a multi-line one still has
+  equal space above and below. A labelled textarea's bottom padding is now the
+  same `--fld-value-bottom` an input uses, which is tight at the smallest
+  sizes — 0 at xs — because that is what the token scale leaves once the label
+  has taken its share of a one-line box.
+
+- **`Textarea` keeps its label when it also has a placeholder.** It rendered the
+  label only when there was no placeholder — `{!placeholder && …}` — so
+  `<Textarea label="…" placeholder="…" />` dropped the label from the markup
+  entirely. Not mispositioned: absent. And since nothing fell back to
+  `aria-label`, the field had no accessible name at all, which a screen reader
+  reports as an unlabelled text box.
+
+  `Input` never did this. It renders the label whenever one is given and floats
+  it when `isFocused || isFilled || placeholder`, so the two sit together: the
+  label above, the placeholder below it. `Textarea` now does the same, and the
+  stylesheet needed nothing — `.base:has(.label.floating) .input` already
+  clears the room, so the value drops to the floating-label offset on its own.
+
+  Also removed a `[styles.placeholder]: placeholder` class that had no rule
+  behind it in `Input.module.scss`, which resolved to `undefined` and put a
+  literal `undefined` class on every textarea with a placeholder.
+
+- **`Textarea` measures like the input beside it.** It pinned its own height
+  inline — 48px with a placeholder, 56px without — which ignored `size`
+  entirely and left a placeholder-only textarea 8px shorter than an `m`
+  `Input`. Its first line then sat at the top of the content box while an
+  input centres its value, an 11px step that reads as a misplaced placeholder.
+  The height now comes from the size token like every other field, and the
+  block is padded symmetrically so its first line lands where an input's
+  single line does and the rest grows downwards from there. A field with a
+  floating label is unaffected; that case still places the value under the
+  label.
+
+- **The docs sidebar shows which tag a page carries, not just a dot.** Every
+  tagged page writes `navTag: "New"` or `"Update"` in its frontmatter, and the
+  sidebar rendered only a coloured `Pulse` — so the two were distinguishable
+  only as cyan against green, with the authored word thrown away and the whole
+  meaning resting on hue. The dot stays; the word is now beside it.
+
+- **`getPages` read frontmatter keys no page writes.** It took `navTag` and
+  `navLabel` from `attributes.tag` and `attributes.tagLabel`, so both were
+  always `undefined` on that path while `getNavigation` read the same
+  frontmatter correctly.
+
+- **`Feedback` centres its icon when there is nothing to align it with.** The
+  root element hardcoded top alignment, which is right beside a heading and
+  wrong beside a single line of text — the icon and the message shared only
+  their top padding and sat top-flush. It now top-aligns when there is a
+  `title` or `children` and centres otherwise. An explicit `vertical` prop
+  still overrides the default, as before.
+
+- **`ThemeSwitcher collapsed` was wider than the one button it showed.** The
+  two hidden options collapse to zero width, but each still owned its share of
+  the group's `gap`, so the pill carried a few pixels of empty space after the
+  active theme. A hidden option now takes one gap with it, and the margin
+  animates back with the width when the group opens.
+
+- **A `DropdownWrapper` panel no longer slides or flashes as it opens.** The
+  open animation scales the panel from 0.9 to 1 about a `transform-origin` that
+  the stylesheet hardcoded to `top right`, so on every other placement the edge
+  anchored to the trigger travelled by a tenth of the panel's size — measured
+  in Chromium, a 480px panel on `bottom-start` drifted 48px sideways while
+  opening. The origin is now derived from the placement Floating UI actually
+  resolved, which matters because `flip()` is in the middleware: a panel that
+  flips above its trigger has to grow from its bottom edge. Separately, Floating
+  UI reports `0, 0` until it has measured, so the panel painted one frame at the
+  corner of its positioning context before jumping to the trigger. It is now
+  `visibility: hidden` for that frame — in the DOM and measurable, just not
+  drawn.
+
+- **`DatePicker`'s month and year selectors stay open, and stop throwing focus
+  onto the calendar.** Three faults behind the same report, that the picker
+  "doesn't feel native":
+
+  - Both selectors could be open at once, stacked over the calendar. Each
+    trigger calls `stopPropagation`, so opening one never reached the other's
+    outside-click handler. They are now mutually exclusive, the way a native
+    select is.
+  - Opening either one closed it again about 20ms later. `DropdownWrapper`
+    tested "did focus leave the panel?" against the panel element, but the
+    panel is wrapped by `FocusTrap` and `ArrowNavigation`, each of which
+    renders a focusable container *above* it and focuses that container itself
+    as the panel opens. Focus arriving on one of those read as focus leaving.
+    Containment is now tested from the portal's outermost element. Autofocus
+    also now waits for Floating UI to measure, since a `visibility: hidden`
+    element cannot take focus and the attempt was landing nowhere.
+  - Closing a selector jumped focus onto a day button instead of leaving it on
+    the trigger. `useArrowNavigation` focused `initialFocusedIndex` on every
+    mount, and the picker remounts its calendar whenever a selector closes. A
+    mount pass now takes focus only when the consumer passed `autoFocus`, or
+    when nothing else holds it — after a keyed remount the element that had
+    focus is gone, so focusing restores rather than steals.
+
+  `ArrowNavigation`'s own container autofocus was racing the hook's item
+  autofocus on a 0ms timer, so a list settled on its first option or on the
+  container depending on how much layout work landed in between; it now defers
+  to the item. `apps/dev/src/app/(main)/datepicker-check` is the browser
+  fixture these were measured against.
+- **`FocusTrap` no longer pulls focus back to the first focusable element.**
+  Its `autoFocus` ran whether or not focus was already inside the trap, so it
+  competed with whoever had placed focus more precisely: measured in Chromium,
+  reopening a `DatePicker`'s year list landed on 2024 and was then dragged back
+  to 2001 two milliseconds later, and which one won depended on whether
+  Floating UI had to measure the panel again. It now defers when focus is
+  already inside, which is what a trap is for — keeping focus in, not deciding
+  where it sits.
+
+- **A `DropdownWrapper` forgets its focused index when it closes.** The index
+  seeds `ArrowNavigation`'s `initialFocusedIndex`, which is read once at mount,
+  so the next open started from the last session's index and never resolved the
+  current selection at all.
+
+- **Scrolling an option into view no longer moves the page, or lands short.**
+  It called `scrollIntoView`, which walks every scrollable ancestor. It now
+  scrolls only the nearest scroller inside the panel, measured in layout pixels
+  rather than through `getBoundingClientRect` — the panel scales from 0.9 to 1
+  as it opens, so rects taken during that animation are up to a tenth short and
+  left the selected row 35px below the scrollport, just off the bottom edge.
+
+## [2.0.0-alpha.1] — 2026-09-17
+
+The second alpha preview, on the same **`alpha`** dist-tag. `npm install
+@once-ui-system/core` still resolves the 1.8 line; asking for this one stays
+deliberate:
+
+```bash
+npm i @once-ui-system/core@alpha
+```
+
+Mostly regressions the first alpha shipped and the first alpha found — which
+is what an alpha is for.
+
+### Fixed
+
+- **`CountFx` no longer freezes when `value` reverts mid-animation.** A run
+  started from the last *completed* value, which was recorded only when an
+  animation reached its end. Changing `value` back while one was still in
+  flight therefore hit the `value === previousValueRef.current` early return
+  after the effect cleanup had already cancelled the frame: nothing was left
+  driving the number, and the display stayed on whatever intermediate value it
+  happened to be showing until some third value came along. A monthly/annual
+  pricing toggle clicked twice in quick succession was enough to trigger it.
+  Runs now start from whatever is on screen rather than from a completion
+  guarded ref, so an interrupted transition reverses from where it got to and
+  always settles exactly on the target. The `smooth` effect renders its digit
+  wheels from the same origin, which now tracks the run in flight instead of
+  the last one that finished. Reported and diagnosed by @chanderlud in
+  [#134](https://github.com/once-ui-system/core/issues/134).
+- **`DatePicker` and `Carousel` rendered invisible, but interactive, for four
+  minutes.** The 2.0 pass that moved `RevealFx.delay` to milliseconds also
+  multiplied the two `speed` values in core by a thousand — and `speed` was
+  already milliseconds, so the calendar's reveal became a 250-second opacity
+  transition and the carousel slide's a 300-second one. The buttons were
+  mounted, focusable and clickable underneath; you just could not see them.
+  Both are back to 250 and 300, and a test fails on any core component that
+  asks `RevealFx` for a reveal slower than five seconds.
+- **`Table`'s page-size select was a 2rem sliver, `User`, `UserMenu`, `OgCard`
+  and `Avatar` skeletons filled their container.** 2.0 renamed `height` to
+  `size` on the field components and replaced `Skeleton`'s own `width` /
+  `height` scale with `size`, and the codemod applied that to consumer trees —
+  but core's own call sites were never run through it. `height="xs"` on the
+  pagination `Select` and the table search, `height="m"` on the `User`
+  skeleton and four on `OgCard`'s all landed on the Flex layout prop of the
+  same name, where `xs` and `m` are spacing tokens; `Avatar`'s loading circle
+  passed `width` / `height` tokens instead of `size`. All are on the 2.0 names,
+  the page-size select gets 5rem to show its value, and a test scans every
+  component for the 1.8 spellings.
+- **`OgCard` showed a loading skeleton over data it was handed.** With both
+  `url` and `ogData` set, the fetch for the URL still ran and `loading` stayed
+  true until it finished, so the mock-data card drew skeletons over content it
+  could already render. Provided data is never fetched for now, and never
+  loading.
+- **The time picker's header showed `13:14 PM`.** It printed the 24-hour value
+  and then appended the meridiem; it prints `01:14 PM` now.
+- **The published package now carries its license text.** `package.json` has
+  declared `"license": "MIT"` all along, which is what license scanners read,
+  but the grant itself never shipped: the MIT file lived only at the monorepo
+  root, and npm includes a license only when it finds one in the package
+  directory. No tarball up to and including 2.0.0-alpha.0 carried one. The
+  notice also now names Dopler, the entity, rather than Once UI, the product.
+
+### Fixed (docs site, not published code)
+
+- **Markdown tables rendered as raw pipes.** The docs pipeline had no GFM, so
+  the harness table on the AI coding page and the clamp table on the Input page
+  printed their source. `remark-gfm` is in the pipeline now and a markdown
+  table renders through the design system's `Table`, like every other table in
+  the docs. Two harness links pointed at the wrong files on the way.
+- **The `IconButton` custom-content example lost its label on the primary
+  button.** The `Text` inside forced `onSolid="neutral-medium"`, a neutral
+  on-solid token over a brand solid, which is near-white on the docs' contrast
+  solids. A button already sets the text colour for its own surface, so the
+  example inherits it.
+- **The "Copy for LLM" menu's three options carry prefix icons** (document,
+  OpenAI, Claude). The two brand marks come from `react-icons`, registered in
+  the docs app's own icon library as the harness rules prescribe.
+- **The `Option` prefix example rendered nothing:** it passed `icon` to `Icon`,
+  whose prop is `name`.
+
+### Changed
+
+- **Agent guidance: a prop another prop already implies is a default too.** The
+  harness told agents to omit `position="relative"` and then shipped examples
+  writing `fillWidth` beside `maxWidth` (which already fills the width),
+  `minWidth={0}` beside `fillWidth` (which already sets `min-width: 0`), and
+  `border="neutral-alpha-weak"` where bare `border` draws the default border —
+  the surface recipe itself was written that way, in the rules, the compact
+  rules, a task bundle, `AGENTS.md` and 15 example files. All of them now use
+  the short forms, and the rules gain the principle behind them plus one on
+  `zIndex`: it belongs to an isolated stacking group (a decorative layer and
+  its content sibling, a sticky header over its pane), not to a lone element
+  or a page-wide ladder.
+
+  `validate-ai-code` enforces the three mechanically, per element rather than
+  per file, with `--fix` for each; it also flags a `zIndex` in a file with
+  nothing positioned absolute, fixed or sticky. Tag scanning is brace-aware
+  now, so a `>` inside an arrow function in a prop no longer ends the tag
+  early. Covered by tests.
+
+## [2.0.0-alpha.0] — 2026-09-16
+
+Published to the **`alpha`** dist-tag, not `latest`. `npm install
+@once-ui-system/core` keeps resolving 1.8.4, and every `^1.8.x` range in the
+wild is unaffected — a prerelease does not satisfy a stable range, not even
+`^2.0.0` or `*`. Getting it is deliberate:
+
+```bash
+npm i @once-ui-system/core@alpha
+```
+
+This is a preview of 2.0, not 2.0. The API below is what we intend to ship,
+but the point of an alpha is to find out where that is wrong, so treat it as
+open to change and please report what breaks. Three things are known and
+deliberate:
+
+- **The published package is bundler-only.** `dist` is ESM syntax in `.js`
+  files without `"type": "module"`, so Next.js, Vite and friends load it and
+  plain Node `require`/`import` does not. That predates this release; fixing
+  the module format is a 2.0 decision that has not been made yet.
+- **`@once-ui-system/foundations` is not published.** Core inlines its SCSS and
+  CSS at build time, so consumers install nothing new.
+- **Breakpoints are fixed.** See `MIGRATING.md` §7.
+
+Heading to **2.0**, not to 1.9. `package.json` carries `2.0.0-alpha.0` so
+nothing here can be published as a version nobody chose — 1.9.0 was a working
+number bumped ahead of any release decision, and it is now skipped entirely.
+
+The `ThemeInit` fix that briefly lived under a 1.9.0 heading shipped instead as
+**1.8.4** (published 2026-08-28), cut from the tree that produced the published
+1.8.3 so it reached `^1.8.x` consumers with nothing to migrate. Its entry is
+below, in its own release.
+
+Classification is **major** by [RELEASING.md](RELEASING.md)'s own criteria, and
+no longer open: props are renamed, three modules leave the root barrel for
+subpaths, a type union narrows from `string`, and a browser floor appears where
+there was none. What remains is the maintainer's publish decision — whether 2.0
+ships as scoped here, or whether any of it waits.
+
+**What a 1.8.x app has to do.** Five things, in the order it makes sense to do
+them — [MIGRATING.md](MIGRATING.md) walks each one:
+
+1. Run the codemod. It applies every prop rename below, component-scoped, and is
+   a no-op on its own output.
+2. Move chart, `CodeBlock` and `MediaUpload` imports to the `/data`, `/code` and
+   `/media` subpaths, and install the peer each one names. The codemod does this
+   too.
+3. Rewrite `ColorInput`'s `onChange` body by hand — the signature changed, and a
+   rename cannot express that.
+4. Import `LayoutProvider` from `@once-ui-system/core/next`, if the app is a Next
+   app, to keep 1.8.x link and image behavior.
+5. Check the browser floor: scheme tokens are `oklch()` now, which needs Chrome
+   111 / Safari 15.4 / Firefox 113.
+
+Nothing else is required to build. `IconName` is a real union rather than
+`string`, so a name that used to render a blank space is now a type error — that
+surfaces bugs an app already had, it does not create work.
+
+**The Next.js step in detail.** `ElementType` (which backs `SmartLink` and any
+`Button` / `Card` / `ToggleButton` with `href`), `Media`, `Logo`, `MegaMenu` and
+`Kbar` now render through the adapter layer, whose defaults are plain DOM —
+`<a>`, `<img>`, `window.location.assign`. Keeping 1.8.x behavior is a one-line
+change — the import path for `LayoutProvider`:
+
+```diff
+- import { LayoutProvider } from "@once-ui-system/core";
++ import { LayoutProvider } from "@once-ui-system/core/next";
+```
+
+That provider is core's `LayoutProvider` with the Next adapters already
+installed. No provider is added to the tree and no props change. Apps that
+compose `AdapterProvider` themselves can keep using `NextAdapterProvider`
+directly.
+
+Without either, internal links full-page reload and images skip `next/image`
+optimization. The DOM fallbacks are what make core usable outside Next, and are
+covered by `adapter-fallbacks.test.tsx`.
+
+Automatic detection was investigated and rejected on evidence rather than
+taste. The bundler half works — a guarded `await import("next/link")` builds
+clean under esbuild and Vite with no Next installed, and degrades to the DOM
+fallback. React is the blocker: the DOM `useNavigate` returns a closure while
+the Next one calls `useRouter` and `useCallback`, so swapping implementations
+after mount breaks the rules of hooks. Resolution must therefore settle before
+the first render, and a browser bundle has no synchronous way to conditionally
+resolve an optional module.
+
+### Breaking
+
+**Prop API standardisation.** Every place where one prop name carried two
+meanings, or one meaning went by two names, is resolved. All of it is
+mechanical: the codemod applies the renames component-scoped, following import
+aliases, and running it twice is a no-op.
+
+```bash
+curl -O https://raw.githubusercontent.com/once-ui-system/core/main/scripts/codemod-2.0.mjs
+node codemod-2.0.mjs src --dry   # report only
+node codemod-2.0.mjs src
+```
+
+Boolean props that toggle visibility now read `showX`, leaving the plain name
+for the thing itself:
+
+| Component | 1.8.x | 2.0 |
+| --- | --- | --- |
+| `ProgressBar` | `label?: boolean` | `showLabel` |
+| `Feedback`, `Toast` | `icon?: boolean` | `showIcon` |
+| `DataTooltip` | `colors?: boolean` | `showSwatches` |
+
+State props drop the `is`/`has` prefix, restoring the convention the docs
+already prescribed (`basics/components` — "use `open` instead of `isOpen`"):
+
+| Component | 1.8.x | 2.0 |
+| --- | --- | --- |
+| `Dialog`, `Modal`, `DatePicker`, `DropdownWrapper`, `EmojiPickerDropdown`, `KbarContent` | `isOpen` | `open` |
+| `Checkbox`, `RadioButton`, `Switch` | `isChecked` | `checked` |
+| `Checkbox` | `isIndeterminate` | `indeterminate` |
+| `DatePicker`, `DropdownWrapper` | `isNested` | `nested` |
+| `NavIcon` | `isActive` | `active` |
+| `Input`, `Textarea`, `Option` | `hasPrefix` / `hasSuffix` | `prefix` / `suffix` |
+
+Four of those names were held by React's own DOM attribute types — `checked`
+and `size` on `InputHTMLAttributes`, `prefix` on the base `HTMLAttributes` (the
+RDFa attribute) — which is why the prefixes existed at all. Those components
+now `Omit` the inherited declaration and declare their own. The cost is that
+the native attribute can no longer be forwarded: `<Input size>` is the token
+scale, not the HTML character-width attribute.
+
+`radius` now means one thing everywhere — the roundness scale that
+`StyleProps` has always defined. Corner selection, which had been overloading
+the same name on five components, moves to `corners`:
+
+```diff
+- <Button radius="top-left" />
++ <Button corners="top-left" />
+  <Button radius="none" />   // unchanged — "none" is roundness, not a corner
+```
+
+Affects `Button`, `IconButton`, `Input`, `Textarea`, `ToggleButton`. This is
+the one rename the codemod decides by value rather than by name; a computed
+`radius={expr}` is reported rather than rewritten.
+
+`variant` now means appearance everywhere. `Pulse` and `Tag` were using it
+for a **colour scheme**, which is why the prop had seven incompatible value
+spaces across thirteen components; both now take `scheme`.
+
+**Timing props are milliseconds, consistently.** An audit found the library was
+split three ways: most timings were already ms (`Animation.duration` and
+`.delay`, `TypeFx.speed`/`.delay`, `Hover.delay`/`.hideDelay`,
+`GlitchFx.interval`, `Carousel.play.interval`, `CountFx.speed`,
+`RevealFx.speed`), two were seconds, and four `speed` props on
+`CelebrationFx`, `WeatherFx`, `MatrixFx` and `Particle` are unitless
+multipliers that are not durations at all and are unchanged. The two outliers
+move to ms:
+
+```diff
+- <RevealFx delay={0.2} />        <ShineFx speed={0.75} />
++ <RevealFx delay={200} />        <ShineFx speed={750} />
+```
+
+`RevealFx` was the sharpest case: its `delay` was seconds while its own
+`speed`, on the next line of the same interface, was already milliseconds.
+
+**`Skeleton` drops its second size scale.** It extends `Flex`, so width is now
+expressed the way it is on any other element — `width="80%"`, `maxWidth={24}` —
+instead of a five-step scale that only ever meant percentages. What remains is
+`size`: the height of a `line`, the diameter of a `circle`. `delay` becomes
+milliseconds rather than a `"1".."6"` index into six fixed classes.
+
+```diff
+- <Skeleton shape="line" height="s" width="l" delay="3" />
++ <Skeleton shape="line" size="s" width="75%" delay={300} />
+```
+
+**`fill` means layout everywhere.** `Media`, `Carousel` and `Swiper` each
+declared a `fill` of their own, shadowing the `StyleProps` layout prop of the
+same name that every Flex-derived component has (`fillWidth` + `fillHeight`).
+So `<Media fill />` did not fill anything — it dropped the intrinsic aspect
+ratio and handed sizing to the parent, which is a reasonable thing to want and
+not remotely what the name says. That behaviour is now `stretch`, and `fill` on
+those three means what it means on everything else.
+
+```diff
+- <Media fill />        <Carousel fill />        <Swiper fill />
++ <Media stretch />     <Carousel stretch />     <Swiper stretch />
+```
+
+**Colour props that paint into SVG accept tokens again.** `color` on
+`LinearGauge`, `RadialGauge`, `Particle` and the chart module, and
+`colorStart` / `colorEnd` / `color` on `Background`'s gradient, dots, grid and
+lines, were typed as bare `string` — so a design token was accepted but never
+suggested, and a typo in one was never caught. They now take `ColorValue`,
+which is `Colors | (string & {})`: tokens autocomplete, and a raw `#fff`,
+`rgb(...)` or `var(...)` still passes, because these values are painted into
+SVG rather than applied through a class.
+
+Other divergences resolved:
+
+- `Input` and `Textarea` take `size` instead of `height`. It was always a
+  t-shirt scale rather than a dimension, and only spelled `height` because
+  `size` was inherited from the DOM.
+- `SegmentedControl` becomes an ordinary controlled input: `selected` → `value`,
+  `onToggle` → `onChange`, `defaultSelected` → `defaultValue`. `selected` is a
+  boolean on the five other components that have it, and `onToggle` is
+  `() => void` on the other four.
+- `RevealFx` takes `revealed` instead of `trigger`. It is controlled state;
+  `trigger` elsewhere is either the element that opens something or a mode union.
+- `ColorInput`'s `onChange` hands back the value, `(value: string) => void`,
+  like every other `onChange` in the library, instead of a hand-built
+  `ChangeEvent`. **The codemod flags this one but cannot rewrite the callback
+  body** — the signature changed, so the handler needs a human.
+
+Components deriving their props from `Input` (`Select`, `NumberInput`,
+`TagInput`, `ColorInput`, `DateInput`, `DateRangeInput`, `PasswordInput`) and
+from `DropdownWrapper` (`EmojiPickerDropdown`) inherit these renames; the
+codemod knows their tags. Property accesses on `ComponentProps<typeof X>`
+(`props.isChecked`) are not JSX and are surfaced by `tsc`, not rewritten.
+
+**Charts, `CodeBlock` and `MediaUpload` move to their own subpaths.** The lazy
+`await import()` and its `catch()` never made `recharts`, `prismjs` and
+`compressorjs` optional. A bundler resolves the specifier when it walks the
+module graph, so the failure came at resolution and the fallback never ran — and
+the root barrel re-exported `code`, `media` and `data`, which put all three
+specifiers into every consumer's graph. Reproduced on an app rendering no chart,
+no `CodeBlock` and no `MediaUpload`: it still could not build without all three
+installed. The plumbing was there; it had never worked.
+
+```diff
+- import { LineChart, CodeBlock, MediaUpload } from "@once-ui-system/core";
++ import { LineChart } from "@once-ui-system/core/data";
++ import { CodeBlock } from "@once-ui-system/core/code";
++ import { MediaUpload } from "@once-ui-system/core/media";
+```
+
+An app that never imports a subpath never has the specifier, so the three are
+optional peers for real — 13.5M of install weight nobody pays for by default —
+and the `MissingDependency` fallback finally means what it says. The codemod
+moves the imports; 53 files across the fleet named these from the root. Core's
+published types no longer import `CurveType` from recharts either, so skipping
+the peer no longer breaks typechecking in an app that never touches a chart.
+
+**Icon names are a union, and the registry is not typed against react-icons.**
+Core rendered 54 icons through `react-icons`, so every consumer installed 85M for
+about 4 kB gzipped of SVG — 68M of it icon families core never touched. It was
+never a bundle problem; it was an install problem and a typing problem. The data
+is inlined now (`src/icons/data.ts`, generated by `scripts/generate-icons.mjs`
+from `icon-manifest.json`), `react-icons` is a devDependency used only to
+regenerate it, and a parity test renders all 76 against their originals and
+asserts identical markup. A fresh consumer install of core goes from **513M to
+47M**.
+
+The type change matters more than the megabytes. `Icon` renders its component
+with no props at all, so all core ever needed was "something that returns an
+SVG" — yet the registry was typed against react-icons' `IconType`, putting one
+vendor in the public API of every app that registered an icon. It is structural
+now: react-icons, lucide, heroicons or a hand-written SVG all satisfy it. And
+because of that annotation `IconName` collapsed to `string`, so every name
+compiled, typos included, and a wrong one meant a console warning and a blank
+space. It is a real union now, extended by declaration merging:
+
+```ts
+declare module "@once-ui-system/core" {
+  interface IconLibraryOverrides {
+    rocket: true;
+  }
+}
+```
+
+Turning that on immediately found icons core was already rendering as nothing:
+`opacity` and `inbox` in components, `chevronDoubleLeft` and `chevronDoubleRight`
+in `Table`'s pagination, and `email`, `loading` plus seventeen more across
+fifteen shipped AI example blocks — the blocks agents copy. Those names are
+registered where they were sensible (**76 icons**, up from 54) and corrected
+where they were not. Brand marks stay out: they are trademarks, they date, and
+every app in the fleet already registers its own.
+
+**`Textarea` grows with its content by default.** `lines` was `3`, so every
+textarea that never named one was a fixed three-row box with a resize handle.
+It is `"auto"` now: the field sizes itself to what is in it, and the handle
+appears only on a fixed height, since a textarea that manages its own height has
+nothing to hand over.
+
+```diff
+- <Textarea id="notes" label="Notes" />              // three fixed rows
++ <Textarea id="notes" label="Notes" />              // grows with content
++ <Textarea id="notes" label="Notes" lines={3} />    // the old behaviour
+```
+
+The wrapper keeps `min-height: var(--fld-h)`, so an empty one is still a full
+field tall rather than collapsing to a single line. `resize` now only applies
+alongside a numeric `lines`. The codemod strips `lines="auto"` where it was
+written explicitly, since it says nothing 2.0 does not already do; a numeric or
+computed `lines` is left alone.
+
+**Scheme tokens are `oklch()`, which sets a browser floor.** All 285 scheme
+values are expressed in OKLCH. Nothing renders differently where the function is
+supported — every value round-trips to the hex it replaced, verified by building
+the docs and painting each token to a canvas in a real browser, 228 of 228
+pixel-identical against the hex at HEAD. What it buys is that the numbers mean
+something: `oklch(0.6743 0.1670 261.54)` says "two thirds as light as white,
+moderately saturated, blue" where `#5A93FC` says nothing. The cost is that an
+older browser drops the declaration rather than approximating it, so the floor is
+**Chrome 111, Safari 15.4, Firefox 113** (2022–23), with no fallback. The
+`--static-*` values stay hex, because black, white and transparent are clearer
+that way. The ramps themselves are untouched.
+
+### Fixed
+
+- **The mega menu's dropdown shadow is no longer clipped.** `MegaMenu` put
+  `overflow: hidden` on the positioned box that holds the panel and `shadow="xl"`
+  on the surface inside it, so the shadow — drawn outside the surface's border
+  box — was cut off at the panel's own edge. The clip is not the mistake: it is
+  what keeps the contents inside the box while its width and height animate
+  between two groups of different size. An element's own box-shadow, unlike its
+  descendants, is not clipped by its own overflow, so the two belong on the same
+  element. The clipping box now takes the radius and the shadow and the surface
+  gives them up; the 8px top padding moves into `top` in exchange, because the
+  two boxes have to coincide exactly for their rounded corners to.
+
+- **`background="transparent"` and `solid="transparent"` do something.** Both
+  values were in the prop types with no class behind them: the class helper
+  returned `transparent-border` whatever type it was given, so they applied
+  nothing to the background and quietly cleared the author's border instead, and
+  on the client path the background case returned no class at all. The helper
+  now follows its `type` argument, and the two missing utilities
+  (`transparent-background`, `transparent-solid`) are generated.
+
+- **`ThemeSwitcher` now exposes which theme is active.** The active option was
+  marked only by its `"primary"` variant, so assistive technology had no way to
+  tell the three buttons apart. Each now carries `aria-pressed`.
+
+- **A failed emoji fetch no longer fails the build — or the publish.**
+  `prepack` runs `pnpm build`, and the build regenerates
+  `src/data/emoji-data.json` from GitHub. Behind a proxy, a TLS-intercepting
+  network, or offline, that fetch threw and `process.exit(1)` took
+  `npm publish` down with it. The categorised file is committed, so a fetch
+  failure now keeps it, warns, and lets the build continue; the script exits
+  non-zero only when there is genuinely no file to fall back to.
+- **Inputs no longer zoom iOS Safari on focus, and the floating label and value
+  are placed by ink.** Three separate things were wrong with a field on a phone.
+  iOS Safari zooms when a focused control computes below 16px, and
+  `--font-scaling-mobile: 15px` put xs, s and m under it — m being the default.
+  Raising the mobile root does not fix it (xs and s use `font-s`, still 14px at a
+  16px root; clearing 16px that way needs a root of 18.3px, which is no longer a
+  dense product UI), so the clamp goes on the focusable control alone, on touch
+  only, with a line-height floor of 1.3 beside it — otherwise xs and s would put
+  16px glyphs in a 16.88px line box. `l` and `xl` compute identically on touch and
+  desktop, as they always did. Placement was the older bug and has nothing to do
+  with zoom: every size shared one `padding-top: 1rem` and a hand-picked label
+  offset while heights ran 2.5rem to 4.5rem, so at m the gap between the label's
+  baseline and the value's cap height was 1.4px, and at xl it was negative — the
+  value overlapped the label while 28px of dead space collected underneath. Both
+  are derived per size now from where the ink falls (cap height, baseline,
+  descender) centred in the box the value really gets; the worst top-to-bottom
+  imbalance across the whole scale is under a pixel. xs and s gain a touch-only
+  height floor of 40 and 48px — both were under the tap-target minimum, and a
+  flat 48 would have cleared it but collapsed the two sizes into each other.
+  `fontSizeMap` is gone from both components: the stylesheet owns font-size and
+  line-height now, so the clamps can reach them.
+- **`StylePanel` wrote two settings straight to `localStorage`.** `data-solid`
+  and `data-solid-style` bypassed `ThemeProvider` entirely, so they ignored any
+  persistence setting. They go through the provider now. Row dividers also move
+  from a per-row border prop to one stylesheet rule, so hiding or reordering rows
+  can no longer leave a border on the last one; and only the `DataStyle` row
+  reaches for `DataThemeProvider`, where the whole panel used to require one in
+  the tree.
+- **An operable `Card` with no explicit `radius` got the class
+  `radius-undefined`.** The fallback was written `` `radius-${flex.radius}` ||
+  "radius-l" ``, and a template literal is a string — truthy even when the value
+  inside it is `undefined` — so the `||` never ran and the focus ring had no
+  radius to follow. A static `Card` also painted `cursor: interactive`, promising
+  a click it had no handler for; the cursor is now tied to `href` / `onClick`
+  like the focus ring and the role already were.
+- **The AI harness's validator was telling agents to write 1.8.x timings.** Its
+  `RevealFx.delay` rule read "delay is in seconds — use index * 0.1", which 2.0
+  inverts; it now flags seconds and asks for milliseconds. Two of its rules also
+  fired on correct code, which is the worse failure for a tool agents are meant
+  to trust: `color.tokens` matched any string shaped like hex, so a table of
+  order ids (`"#1024"` is a valid #RGBA literal) failed, as did the `fill` and
+  `stroke` of an inline `<svg>` — the exact values 2.0 types as `ColorValue`
+  because no token can express them. And `Card.interactive` fired on a `Card`
+  handed to a `trigger` prop, which its owner operates. Six of the 26 shipped
+  example blocks failed their own validator before this; three do now, and those
+  three are judgement calls rather than defects. The rules are covered by tests.
+- **The shipped AI examples still used `fill` on `Media` and `Carousel`**, which
+  2.0 renames to `stretch` — a rename `tsc` cannot catch, because `fill` stayed
+  valid as the layout prop it now means. Corrected in `auth.tsx` and
+  `blocks/Streaming1.tsx`.
+- **The icon registry was too small for the products built on it.** An audit of
+  every `Icon`, `prefixIcon`, `suffixIcon` and `arrowIcon` call across magic,
+  motion, studio, scenetic and magic-convert found **127 distinct unregistered
+  names over 531 call sites** — every one rendering a blank space today, and
+  every one becoming a type error under 2.0's `IconName` union. The registry goes
+  **76 to 99**, adding the product-UI glyphs the fleet actually asks for: `home`,
+  `folder`, `file`, `image`, `video`, `chat`, `time`, `lock`, `heart`, `tag`,
+  `bolt`, `globe`, `star`, `starFill`, `bookmark`, `filter`, `upload`,
+  `arrowLeft`, `forward`, `barChart`, `banknotes`, `store` and `organization`.
+  That clears 207 of the 531. The parity test covers all 99. Brand marks stay
+  out, as they were: they are trademarks, and an app registers its own.
+- **The codemod renames six icon names that were only misspelled.** `email`,
+  `more`, `conversation`, `sparkles`, `externalLink` and `shop` are not missing
+  icons — they are `mail`, `moreHorizontal`, `chat`, `sparkle`, `arrowUpRight`
+  and `store` under a name someone guessed, about 46 more call sites. The `name`
+  rewrite is scoped to `<Icon>`, since `name` means something else on nearly
+  every other component; `window`, `split`, `stop` and `description` are each
+  plausibly several things and stay type errors for a human.
+- **`ToggleButton` takes a `radius`.** Roundness followed `size`, and `corners`
+  could only scope it — so a tall row with modest corners, which is what every
+  sidebar in the fleet wants, had no prop at all. Aveiro and Studio both reached
+  for `style={{ borderRadius: "var(--radius-m)" }}` instead, five call sites
+  between them. It falls back to `size` when unset, so nothing changes for
+  anyone not asking.
+- **`Kbd` belongs in a sentence.** It renders a `Flex`, and `Flex` is
+  `display: flex`, so every key in prose broke the line and stretched to the
+  column width. The Scrubber page showed four of them stacked as full-width bars
+  between the words describing them. `inline` and `fit` now, both overridable.
+- **`Carousel` and `Swiper` blurred the edges of their own images.** Both put a
+  `Fade` down each side with `base="transparent"` — a gradient from transparent
+  to transparent, which paints nothing. The only thing those elements ever
+  rendered was `Fade`'s `backdrop-filter: blur(0.5rem)`, so what reached the
+  screen was a 6rem blurred strip over the artwork and no fade at all. Swiper's
+  was not even gated: Carousel's at least waited for hover, Swiper's was on the
+  whole time. Removed. The chevron already carries its own surface, which is the
+  affordance those strips were reaching for; an edge treatment that is wanted can
+  come back with a real `base` and a radius.
+- **The carousel chevrons had their borders shaved.** Each sits in a wrapper that
+  paints an opaque surface behind it, and the wrapper was `radius="l"` with
+  `overflow="hidden"` while `IconButton` at size `m` is `radius-m`. The larger
+  corner cut into the smaller one, clipping the button's border at all four
+  corners. The wrapper matches the button's radius now, and with the radii equal
+  there is nothing left to clip.
+- **The chart, `CodeBlock` and `MediaUpload` APIs were missing from the spec
+  entirely.** Each of these ships as a lazy shell (`X.tsx`) in front of the real
+  implementation (`X.impl.tsx`), which is what lets their dependency stay an
+  optional peer. The spec generator read the shell only, saw props declared in
+  another file, and recorded a wrapper relationship — so all six came out with
+  `props: {}` and a phantom `extends: ["X.impl", "interfaces"]` naming types the
+  spec never defined. `series` and `data` appeared nowhere in it. The generator
+  now treats an `X.impl` sibling as the same component (reading its defaults
+  too, since the shell only forwards props) and a module-local `interfaces.ts`
+  as a mixin like the global one. `LineChart` goes from 0 to 17 props, `BarChart`
+  and `LineBarChart` to 12, `PieChart` to 10, `CodeBlock` to 19, `MediaUpload` to
+  17, and `ChartProps` joins the shared mixins rather than being copied four
+  times. No other component's props changed. This is what left agents
+  extrapolating a chart API from examples — and `BarChart` had no example to
+  extrapolate from.
+- **A props table printed a mixed union as one unreadable blob.** The docs' table
+  split a union into separate values only when *every* member was a quoted
+  literal, so `"none" | "percentage" | string[]` on the gauges, or
+  `Colors | "surface" | boolean`, fell through and printed raw. Any union splits
+  now, on its top-level `|` only — the old naive split would have cut through
+  `Record<string, A | B>`.
+- **A collapsed `CodeBlock` faded to the wrong colour, and put its button in the
+  wrong place.** The fade over a collapsed block was `base="page"` while the
+  block paints `surface`, so wherever the two tokens differ — dark mode, where
+  page is `lab(2.7%)` and surface `lab(6.8%)` — it laid a band of page colour
+  across the bottom of the code. It takes the block's own `background` now, and
+  an explicit `style.backgroundColor` carries through to it. `View code` also sat
+  dead-centre of the collapsed area, over the code it was covering; it is
+  anchored 12px above the bottom edge instead.
+- **`Media` honours `fillWidth={false}`.** It accepted the prop, destructured
+  it, and then hardcoded `fillWidth` on the element anyway, so the value was
+  silently discarded. Found while renaming `fill` above.
+- **`SplitView` works on touch, and collapses to tabs on small screens.** The
+  divider listened for `mousedown` and `mousemove` only, so on a touch device it
+  could not be dragged at all — no amount of changing direction helped, because
+  no drag ever started. It uses pointer events now, which cover mouse, pen and
+  touch in one path, with pointer capture so the drag survives the finger
+  leaving the handle.
+
+  Below `collapseBelow` (default `s`) the split becomes tabs showing one panel
+  at a time, since a resizable split is a poor pattern on a phone in either
+  orientation: neither pane is usable at any ratio, and a drag handle competes
+  with page scrolling. Pass `labels` to name the tabs.
+
+  Two further faults fixed on the way: `defaultSplit`, `minSplit` and `maxSplit`
+  were accepted and then ignored — the hook hardcoded 0.3, 0.2 and 0.8 — and the
+  divider was pointer-only despite the docs claiming it was keyboard
+  accessible. It is now a focusable `role="separator"` that arrow keys move in
+  5% steps and that reports its position through `aria-valuenow`.
+
+- **The date-and-time picker no longer corrupts the time as you edit it.** Two
+  faults compounded into what looked like the field flipping between AM and PM
+  while typing. `handleTimeChange` takes a 1–12 hour, but the minutes field and
+  the AM/PM control both passed `selectedTime.hours`, which is 24-hour — so at
+  9:31 PM, editing the minutes re-applied the PM offset (21 + 12 = 33),
+  `setHours(33)` rolled the date forward a day, and the hour came back as 09.
+  Every further edit compounded it. Verified in a browser: before, editing the
+  minutes at `Aug 15, 21:31` produced `Aug 16, 09:45`; after, `Aug 15, 21:45`.
+- **The time panel no longer disappears mid-edit.** `DateInput` keyed the picker
+  on `value.getTime()`, so every hour, minute or AM/PM change altered the key
+  and React unmounted and remounted the whole picker — resetting it to the
+  calendar view while the dropdown stayed open, which reads as the picker
+  closing itself. The key now depends only on open state; the picker already
+  syncs to a changed `value` in an effect.
+- **A dropdown no longer closes when a click lands on something unfocusable
+  inside it.** `focusout` treated a null `relatedTarget` — the padding of a
+  field, the gap between two stepper buttons, a label — as focus leaving the
+  panel. A genuine outside click is already handled separately.
+
+- **Icon-only controls announce what they do, not which glyph they use.**
+  `IconButton` falls back to the icon *name* as its accessible label when given
+  no `tooltip` and no `aria-label` — so a carousel control announced
+  "chevronRight button" and table pagination announced "chevronDoubleLeft
+  button". The fallback stays, because an unnamed button is worse than a badly
+  named one, but core's own components no longer rely on it: 21 call sites
+  across `Table`, `Carousel`, `DatePicker`, `ScrollContainer`, `CompareImage`,
+  `PasswordInput`, `InteractiveDetails`, `StyleOverlay`, `CodeBlock` and
+  `ChartHeader` now carry real labels, and a test fails the build if a new one
+  appears.
+
+  `StylePanel`'s four swatch pickers were worse than mislabelled: the click
+  handler and `tabIndex` sit on a wrapping `Flex`, so the focusable element was
+  a div with no role and no name at all, while the `IconButton` inside was
+  decorative. The label, `role="button"` and `aria-pressed` now sit on the
+  element that is actually the control.
+
+- **`opacity={0}` and `zIndex={0}` now work.** Both are legal values — `Opacity`
+  includes `0`, `zIndex` includes `-1` and `0` — and `.opacity-0` / `.z-index-0`
+  ship in the stylesheet, but the class list guarded them on truthiness rather
+  than presence, so the single most useful value of each prop (hide a layer, pin
+  to the base stacking level) silently did nothing. The responsive `opacity`
+  variants already had the correct check; the base value and all four `zIndex`
+  breakpoints did not. Found while building a hover cross-fade, where both
+  images rendered at full opacity, stacked.
+
+- `@once-ui-system/foundations` was declared in core's **`dependencies`** as
+  `workspace:*`. `pnpm publish` rewrites that protocol to the depended-on package's
+  literal version, so the packed tarball declared a hard runtime dependency on
+  `@once-ui-system/foundations@2.0.0-alpha.0` — an unpublished package. Every
+  `npm install @once-ui-system/core` would have failed with E404, and a stable
+  release would have pinned consumers to an alpha. Core has no runtime import of
+  foundations (the build inlines its SCSS/CSS into `dist`), so it moves to
+  `devDependencies`, which consumers never install. A new
+  `publishable-dependencies.test.ts` fails on any workspace-protocol or pre-release
+  range in `dependencies`; `publint` and `arethetypeswrong` both pass on the broken
+  tarball, because they inspect the package's own structure rather than whether its
+  dependency graph resolves.
+
+### Added
+
+- **`ThemeSwitcher` gains `collapsed`.** The control shows only the active theme
+  and reveals the rest on hover or focus, for headers and footers where it has
+  to be reachable from every page without spending three slots on itself.
+
+  It stays a real toggle group rather than a hover trick: every option keeps its
+  tab stop (collapsed with `max-width: 0`, not `display: none`), `:focus-within`
+  opens the group so a keyboard visitor can reach all three, and any device
+  without hover gets the expanded group from the start — otherwise the only way
+  in would be to tap the visible button, which would have already changed the
+  theme. The width transition is the only motion and `prefers-reduced-motion`
+  removes it.
+
+  ```tsx
+  <ThemeSwitcher collapsed />
+  ```
+
+- **`focusRing` on `Input` and `Textarea`.** A field draws no focus ring —
+  deliberately, that borderless native look is the point — but that leaves a
+  keyboard user with nothing to go on, while `Card` and `SmartLink` in this
+  same library do show one. `focusRing` opts a field in, using the same
+  outline as the `.focus-ring` utility so it matches every other focusable
+  thing on the page. Off by default, so nothing changes unless asked. It
+  shows on a mouse click too: `:focus-visible` always matches a field that
+  takes keyboard input, however that field was focused.
+
+  Not available on `Select`, and omitted from its props rather than accepted
+  and ignored: `Select` moves focus off the trigger and into the dropdown, so
+  the trigger is not the focused element for most of the interaction and a
+  ring keyed to it would light on first focus and then go out with the menu
+  still open. Giving `Select` a focus ring means tracking focus across the
+  whole control first.
+
+- **`StylePanel` is composable, and its state can be host-owned.** The panel had
+  been forked twice — once in Magic's site editor, once on Studio's brand page —
+  and both forks diverged on the same three axes, so those are the ones it opens
+  up. Every row and group is reachable as a part (`StylePanel.Brand`,
+  `StylePanel.Page`, and so on) and the default `StylePanel` is a plain
+  composition of them, so a host needing a different arrangement composes the
+  parts inside `StylePanel.Root` instead of reimplementing them; one keeping the
+  default arrangement hides parts of it with `visibility`. Passing `value` and
+  `onChange` takes ownership of the state — the panel then writes nothing to
+  `ThemeProvider`, `DataThemeProvider` or storage, and `onChange` receives both
+  the whole state and just the keys that changed, the latter being what a caller
+  sends to a server. Every row takes a `label` and every group a `title` and
+  `description`: a node replaces the default, `false` drops it.
+- **`ThemeProvider` takes `persistence`.** `"local"` (the default, unchanged),
+  `"none"`, or an adapter that routes storage elsewhere, such as a database.
+  `get` stays synchronous because it runs during hydration, where an await would
+  show a flash of the wrong theme; `set` and `remove` may return promises.
+- **Body text scales without touching headings.** `data-body-size` and
+  `data-body-line-height` drive `--font-size-body-multiplier` and
+  `--line-height-body-multiplier` — five steps (90–110) and four (90–120)
+  respectively, read as percentages. Both multipliers already existed and nothing
+  exposed them; `data-scaling` covers the root size, this covers running text.
+  `StylePanel`'s new body-text group is opt-in.
+- **`generateColorScheme` and `schemeAlphaVariants`.** Studio's brand page has
+  had a scheme generator for a while and it already worked in OKLCH internally;
+  it moves to core so every app gets it, without chroma-js — the conversions are
+  about forty lines of published matrices, and core having just shed react-icons
+  is no place to take a dependency for colour maths. One thing changes on the way
+  across: holding chroma fixed while lightness climbs asks for a colour that does
+  not exist at the light end, and converting that clamps R, G and B separately,
+  shifting the hue as it clips. Reducing chroma until the colour fits instead
+  cuts the worst error against the built-in schemes from 0.168 to 0.110 OKLab
+  ΔE, and about five-fold on the lightest steps. Seventeen tests regenerate each
+  built-in scheme from its own step 600 and assert the worst step stays in
+  tolerance.
+- **`Select` dropped the `className` it was given.** The caller's class sat
+  inside `classNames`' object argument, where clsx reads a key as the class
+  and its value as a condition — so a truthy `className` put the literal
+  string `"className"` on the element and the caller's own class never
+  reached the DOM at all.
+
+- **Browser autofill left the label on top of the filled text.** Autofill
+  fires no focus, blur or change event, so nothing in `Input` or `Textarea`
+  ever learned the field had stopped being empty — the same overlap as the
+  `defaultValue` case below, on the one path a user cannot work around by
+  clicking into the field. The one thing the browser does emit is an
+  animation: an inert keyframe hangs off `:-webkit-autofill` and the
+  components listen for it by name, so the label floats the moment the
+  browser fills the field. A consumer's own `onAnimationStart` is chained
+  rather than dropped.
+
+- **A prefilled field rendered its label on top of its value.** `Input` and
+  `Textarea` derived `isFilled` from `props.value` alone, so an uncontrolled
+  field — `defaultValue`, which is how a settings form normally renders saved
+  data — never floated its label: a profile form came up with every prefilled
+  row overlapped at once, and only corrected itself field by field as the user
+  focused and blurred each one. `isFilled` is seeded from `defaultValue` too,
+  and the effect that syncs it now ignores an `undefined` value instead of
+  clobbering that seed back to false on the first render. Browser autofill is
+  still not covered — it fires neither focus nor blur — and wants the float
+  keyed off CSS rather than React state.
+
+- **The AI spec lists `iconNames`.** `IconName` reached it as an opaque type
+  name, so an agent had no way to know what exists and guessed — which is exactly
+  how those fifteen example blocks came to name icons that render as nothing.
+- **The AI spec resolves the types its props name.** `series: SeriesConfig |
+  SeriesConfig[]` pointed at a shape `spec.json` never defined, so the chart API
+  was visible but not usable: two clean-context agents hit it independently and
+  reverse-engineered the row shape from an example instead. `types` now resolves
+  to a fixed point — a shape's own fields name further types, and those are
+  exactly the ones needed next — and carries object shapes and aliases beside
+  the string unions it already had, 25 entries to 93. `DataPoint` comes with its
+  `[key: string]` index signature, which is where a chart's series keys actually
+  live and which reading only property signatures had dropped. Resolution goes
+  through the type checker rather than the syntax, so `Omit<...>` and `extends`
+  resolve to the fields a type has rather than to nothing. Three cases are
+  deliberately not inlined: a component's own props say `"Avatar props"` and
+  point at the entry that already lists them; a type over 40 fields (because it
+  extends a component's whole surface) falls back to its own declared members;
+  and `FlexBreakpointProps` lists the 71 prop names that accept a breakpoint
+  object, which is the question that type is asked, rather than sixty lines of
+  declaration text. A test asserts no prop names a type the spec cannot resolve.
+- **The spec preferred a vendored type over ours when the names collided.**
+  recharts ships its own `DotsProps`, and indexing `node_modules` for types like
+  floating-ui's `Placement` let it shadow `Background`'s — which then dropped out
+  entirely, since a vendored type is only ever emitted as a string union. A name
+  declared in both places now resolves to ours.
+- **The CSS API-surface snapshot recorded a selector that does not exist.**
+  Sass keeps `/* */` comments in its output and the extractor matched raw text,
+  so a comment in `theme.scss` mentioning `[data-scaling]` was snapshotted as
+  part of the public selector surface alongside the four real
+  `[data-scaling="90"]`-style rules. Comments are stripped before extraction,
+  and the snapshot picks up the nine `data-body-size` / `data-body-line-height`
+  selectors that `bodySize` and `bodyLineHeight` had added without it — the
+  guard had been failing since the foundations extraction.
+- **The generated AI artifacts depended on the checkout's line endings.** A
+  multi-line object default (`Fade`'s `pattern`, `RadialGauge`'s `angle`) kept
+  its source newlines verbatim, so the committed JSON read `{\r\n ... }` when
+  regenerated on a CRLF checkout and `{\n ... }` on an LF one and flip-flopped
+  between machines. Defaults are collapsed the way type text already was, and a
+  test asserts no artifact carries a carriage return.
+- **`KbarItem` and the `MegaMenu` types are exported.** Components took them as
+  props but consumers could not name them.
+- **`Logo` takes per-theme sources.** `icon` and `wordmark` now accept
+  `{ light, dark }` as well as a plain string, so one element covers both
+  themes instead of two rendered side by side with the `light` and `dark`
+  props hiding one of them. A row of four client logos was eight elements and
+  two places to keep in sync for every change; it is now four and one. Both
+  assets are rendered and CSS picks, rather than reading the theme at runtime —
+  that keeps `Logo` server-renderable and avoids a flash of the wrong mark on
+  first paint. Plain strings are unchanged, and the whole-element `light` /
+  `dark` props still work for gating a logo to one theme deliberately.
+- **`Book`** — a book with a real 3D cover: perspective on the wrapper, a
+  `preserve-3d` context shared by cover and page block, and pages hinged onto
+  the cover's right edge, so the hover turn reads correctly from any angle
+  rather than only head-on. Motion is hover-gated and disabled under
+  `prefers-reduced-motion`; on touch the cover stays square-on. Links through
+  `ElementType`, so it routes via the adapter like every other core link.
+- **`MediaAudioPlayer`** — play/pause, a scrubbable progress bar and
+  elapsed/total time, the audio counterpart to `MediaVideoPlayer` and imported
+  from the same `./components/*` subpath rather than the root barrel. It takes
+  an `onTimeUpdate` callback so a caller can synchronise something with
+  playback — narration highlighting, a transcript, chapter markers — without
+  the player needing to know what is being synchronised.
+- **`Card` takes `selected`.** Picking one card out of a set — a plan, a
+  template, an option in a multi-select list — was every app repainting the
+  border and background by hand, each landing on slightly different tokens. The
+  prop paints both from the brand scheme, keeps them through hover (the hover
+  rule out-specified the background utility class, so a hand-rolled selected
+  card went neutral the moment the pointer touched it), and, on a card that is
+  actually clickable, announces the state as `aria-pressed`. Both colours are
+  defaults: pass `background` or `border` to override either.
+- **`Effect`** — one slot for the interchangeable ambient layers. `BlobFx`,
+  `MatrixFx`, `WeatherFx`, `Particle` and `CelebrationFx` all paint a
+  full-bleed decorative surface behind their content and are, in practice,
+  alternatives to each other; swapping one for another meant changing an import
+  and rewriting the positioning. `<Effect type="matrix" />` picks between them
+  by value, so a template can expose its aesthetic as a single setting, and
+  `type="none"` renders the content with no layer at all. `colors` and `speed`
+  are shared across the set (`Particle` takes the first colour, `blob` is
+  seeded rather than timed); per-effect blocks — `matrix={{ ... }}`,
+  `weather={{ ... }}` — configure one without disturbing the others, so all of
+  them can be set up front and still switched with one prop.
+- **`ai/layouts.md`** — application shells for the harness, where `recipes.md`
+  covers decoration. Three: a dashboard whose pane scrolls rather than its
+  document, a data-driven nav, and a two-pane editor with a timeline. Each is the
+  shape a working product converged on, and the notes say which values matter —
+  `dvh` not `vh`, the sticky offset matching the header, `overflowY` on the
+  panels rather than the SplitView. All three also ship as
+  `ai/examples/app-shell.tsx` so `pnpm typecheck` covers them: a renamed prop
+  breaks the recipe instead of leaving it quietly wrong.
+- **`NavItem`, `NavGroup` and `selectNavHref`** — the two rows a product
+  sidebar is made of. Every product on Once UI grew its own: Aveiro's is 566
+  lines, the docs' 456, Frametic's 52, and all three converged on the same
+  grammar — a link that knows whether it is the current page, and a collapsible
+  group of those indented behind a vertical rail. `NavItem` carries the icon,
+  the label and either a capped count or an unread dot; `NavGroup` is the
+  accordion and the rail, uncontrolled until you pass `open`.
+  They are rows, not a sidebar: headers, footers, org switchers and storage
+  meters differ per product and stay the host's to compose.
+
+  `selectNavHref` is the part worth taking rather than writing again.
+  `pathname === href` misses a nested route and `startsWith` lights the parent
+  up alongside its child; the answer is the longest href that matches, and it
+  existed in exactly one repo.
+- **`Scrubber`** — a playhead over time, extracted from Scenetic's editor. With
+  no tracks it is a seek bar; with tracks it is an editor timeline: stacked
+  layers of blocks sharing one playhead, each selectable, movable and
+  trimmable, with pointer events throughout so it works with a finger as well
+  as a mouse, and a `role="slider"` track so the playhead is reachable without
+  one. It is deliberately not `Timeline`, which lays out a sequence of steps
+  down the page — the two were the same word for unrelated things, which is
+  why this one is named for the gesture instead.
+
+  Editing is offered, not applied: `onBlockChange` reports absolute times
+  clamped to the timeline and measured from where the gesture started (not
+  accumulated per pointer move, so a block cannot drift away from the pointer
+  over a long drag), and the block renders wherever the caller puts it. A
+  minimum length, overlap rules and snapping stay with the application, and
+  refusing a change is simply not applying it. `onGestureStart` fires once per
+  drag, which is one undo entry per gesture rather than one per pointer move.
+  `onChange` and `onSelect` are both DOM handlers on the inherited
+  `HTMLAttributes`, so they are omitted and redeclared — the same resolution
+  the rest of 2.0 uses for `checked`, `size` and `prefix`.
+- **`Setting`, `SettingGroup`, `SettingAxes` and `InfoTip`** — the settings row
+  that Aveiro, Frametic and Scenetic had each grown a private copy of. Label
+  (with an optional hover explainer and description) on the left, one control on
+  the right, in a bordered row that stacks into a panel. Aveiro's version took
+  every control as a typed prop — `switch`, `slider`, `dropdown`, `media` — so
+  the component had to know about every control that would ever sit in it; this
+  one takes the control as children and composes with anything, including
+  controls that do not exist yet. `SettingGroup` nests sub-settings *inside* its
+  box so the relationship survives a long scrolling panel, and `SettingAxes`
+  carries the axes of one property side by side rather than as two rows that
+  read as unrelated settings.
+- `LayoutProvider` is now also exported from `@once-ui-system/core/next`, with the
+  Next adapters pre-installed. It makes the adapter migration a single import-path
+  change rather than a new provider in the tree, and it is what a codemod can apply
+  mechanically. `NextAdapterProvider` is unchanged and still exported for apps that
+  compose their own adapters.
+- **Core installs and runs without Next.js.** `next` (along with `sass` and
+  `sharp`) is now an optional peer dependency, and the last runtime `next/*`
+  imports are gone: `Schema` emits a plain `<script type="application/ld+json">`
+  instead of `next/script`, `server/og-utils` returns a standard `Response`
+  instead of `NextResponse`, and `Meta.generate` declares its own return type
+  rather than importing Next's `Metadata`. The only file in the package that
+  touches `next/*` is the opt-in `@once-ui-system/core/next` adapter, and the
+  framework-boundary test now pins the allowlist to that one file.
+
+  Verified by packing the tarball and server-rendering `SmartLink`, `Button`,
+  `Media`, `Row`, `Column`, `Text` and `Schema` in a React app with no `next`
+  in `node_modules`.
+
+  Next.js apps are unaffected in every respect except the adapter step above —
+  the peer range is unchanged when Next *is* present.
+
+- `@once-ui-system/foundations` — tokens, styles, and token-value types extracted
+  into their own package (RFC Phase 1). It is **not published to npm** and is not a
+  dependency of this release: core consumes it at build time only and inlines its
+  SCSS/CSS into `dist`, so every existing import and CSS entry
+  (`@once-ui-system/core/css/tokens.css`) keeps working and consumers install
+  nothing new. Publishing it — so a non-React consumer can adopt it directly, and
+  as the base the planned Tailwind token bridge maps onto — is a separate decision
+  on its own timeline.
+- Package-contract and boundary test infrastructure (RFC Phase 0): `check:package`
+  (publint + arethetypeswrong), the exports-integrity test, a framework-boundary
+  guard (core may not import `next/*`), CSS API-surface snapshots, token
+  custom-property/attribute-selector snapshots, and seed interaction tests.
+
+### Changed
+
+- **Agent guidance.** `ai/rules.md` gains a rule on proportion — two columns in
+  a row finish at roughly the same place, and the fix for a half-empty column is
+  content in the thin side, not more whitespace. `ai/recipes.md` gains the
+  reveal-on-hover pattern with the three rules that keep it accessible, and the
+  matching anti-pattern.
+
+- **Spacing utilities are generated, not typed out.** `scss/styles/` was 5,789
+  lines of hand-written classes with not one loop in the whole directory —
+  every `.p-16`, `.mt-24` and `.g-8` written out in full, `spacing.scss` alone
+  1,504 lines of it. The cost was never the typing; it was that a
+  hand-maintained matrix drifts silently. Every spacing family carried all 23
+  tokens except `mx`, which was missing 48 and 56, and nobody reading 1,504
+  lines was going to notice. The matrix now lives in
+  `scripts/utilities.spec.mjs` and `scss/styles/spacing.generated.scss` is
+  emitted from it — 15 families × 23 tokens, plus the two `g-horizontal--1` / `g-vertical--1` hairline
+  helpers that take a child selector and so stay stated explicitly.
+
+  Verified equivalent rather than assumed: comparing the compiled declarations
+  of the old and new files selector by selector gives 343 shared rules, **zero
+  declaration mismatches**, nothing dropped, and exactly two additions —
+  `.mx-48` and `.mx-56`, the drift. The CSS API-surface snapshot, which guards
+  all 809 public class names, shows the same two lines and nothing else.
+
+  `position.scss` follows, and it is the clearer case: 1,548 lines because it
+  wrote its matrix out five times, once for the base and once inside each of
+  the four breakpoints. Generated it is one list of rules and a loop over the
+  viewport steps. That file had not drifted — the compiled output matches rule
+  for rule, inside every media query, 385 to 385, nothing added, nothing
+  dropped, no declaration changed, and the compiled stylesheet is identical to
+  the byte.
+
+  Between them, 3,052 hand-written lines become a 94-line spec and a 119-line
+  generator. `pnpm check:utilities` fails if the checked-in output does not
+  match a fresh run, so it cannot drift from the spec that describes it, and
+  `build` regenerates before compiling. A separate test pins the generator's
+  breakpoint widths to `breakpoints.scss`, since a generator cannot read a Sass
+  variable and the two stating different numbers would tear the layout
+  mid-resize.
+
+  With the scale in one place, two gaps in it closed. `--static-space-72`
+  (4.5rem) had shipped as a token since the layout layer was written, with no
+  utility class in any family and no entry in `StaticSpacingToken` — a step of
+  the scale that existed in CSS and was unreachable from either the class names
+  or the `padding=` prop. It is now in all three, adding 35 classes: fifteen
+  spacing families and four offsets at each of the five viewport steps. A test
+  pins `StaticSpacingToken` to the generator's token list in both directions,
+  because a class with no token is dead CSS and a token with no class is a prop
+  that type-checks and then does nothing.
+
+  `breakpoints.scss` is generated from the same spec rather than pinned to it by
+  a test. The widths were stated twice — once for the generator, once in Sass
+  for the ten call sites that `@include` the mixins, core component modules
+  included — and two copies of a number are a drift waiting to happen. It keeps
+  its plain filename, since renaming it would churn every one of those call
+  sites for nothing. Generating it changed not one byte of compiled output.
+
+  `flex.scss` follows, and generating it surfaced a third gap — this one with
+  teeth. `.<bp>-flex-show` is hidden by a base rule and revealed inside its own
+  media query, so the pair reads as "show only at this width". `l`, `m` and `s`
+  each had that base rule; `xs` did not, so `.xs-flex-show` was visible at
+  every width instead of only the narrowest. Measured in Chromium across five
+  viewports, the three siblings computed `none` above their breakpoint and
+  `xs` computed `block` at all of them. The class name existed either way, so
+  the class-name snapshot could never have caught it; only comparing the four
+  rules side by side could, which is exactly what a matrix in a loop does and
+  1,500 lines of hand-written CSS does not.
+
+  Generated, that rule exists and the staircase is even. The fix changes
+  rendering only for `xs={{ hide: false }}` used *without* a base `hide` —
+  which was a silent no-op before — and the fleet's one call site pairs the
+  two, so it was correct before and is correct now.
+
+- **`.align-between`, `.align-around` and `.align-even` are gone.** They set
+  `align-items: space-between` and its siblings, which are `align-content`
+  values and not valid for `align-items`, so the browser dropped the
+  declaration and computed `normal` — fifteen classes, counting breakpoints,
+  that did nothing at all. Measured before removing them, and again after:
+  nothing renders differently, because an element that used to get a class
+  doing nothing now gets no class.
+
+  `horizontal` and `vertical` keep their full unions. Which CSS property a
+  value reaches depends on `direction` — on a row `horizontal` is
+  `justify-content` and `vertical` is `align-items`, and on a column they swap
+  — so the same value is meaningful on one axis and meaningless on the other.
+  Across the fleet, 275 uses of a distribution value land on `justify-*` and
+  work; exactly one lands on `align-*`, in Studio's `ThemeTile`
+  (`<Column horizontal="between">`), and that one was already a no-op.
+
+  `border.scss`, `background.scss` and `display.scss` follow, on the same
+  terms: compiled rule for rule against the originals, inside every media
+  query, with selector lists compared as sets so grouping order is not mistaken
+  for behaviour. 124 to 124, 80 to 80, 94 to 94; nothing dropped, nothing
+  added, and one declaration changed on purpose — `.radius-none` set
+  `border-radius: none`, which the CSS parser rejects outright, so the class
+  only ever worked by falling back to the initial `0px`. It says `0` now and
+  renders exactly as it did.
+
+  `grid`, `typography`, `color`, `shadow` and `size` complete the sweep, and
+  turned up the last two gaps. Grid had the `xs-flex-show` bug at every
+  breakpoint rather than one: none of `.l-grid-show`, `.m-grid-show`,
+  `.s-grid-show` or `.xs-grid-show` had the base rule that hides them outside
+  their own query, so a `Grid` told to show only at one width showed at all of
+  them. And `.font-family-display` pointed at `--font-display`, which does not
+  exist anywhere in the token layer, so the declaration was invalid and the
+  class applied nothing — measured in Chromium, an element carrying it kept
+  its inherited font while every sibling class applied the real one. Both
+  display classes now read `--font-heading`, which `.font-display` already did.
+
+  `global.scss` and `utilities.scss` stay hand-written. Eleven rules between
+  them and not a matrix in sight; generating those would add indirection and
+  save nothing.
+
+### Breaking (continued)
+
+- **`LayoutProvider` no longer takes a `breakpoints` prop.** The five steps are
+  fixed: xs 480, s 768, m 1024, l 1440, and `xl` above all of them — `xl` was
+  always `Infinity`, the base state rather than a media query, which is why no
+  `.xl-` class has ever existed.
+
+  This is what lets a responsive `Flex` be a server component. The utility
+  classes carry those widths inside their `@media` queries, and a prebuilt
+  stylesheet cannot honour a width an app picks at runtime, because `@media`
+  does not read custom properties. Supporting both meant two code paths — CSS
+  classes when an app's breakpoints matched the defaults, and a 450-line hook
+  that read a React context and mutated `element.style` when they did not. The
+  second could only run after hydration, so a responsive page was laid out at
+  desktop widths in the server's HTML and corrected itself once JavaScript
+  arrived.
+
+  Both paths are now one. `useResponsiveClasses` is deleted, `isDefaultBreakpoints`
+  is gone from the layout context, and `Flex` and `Grid` render on the server
+  whenever every breakpoint value maps to a class — which is all of them except
+  free-form sizes, rem numbers, the `style` escape hatch, and `xl`. The
+  responsive layout is now in the first paint:
+
+  ```html
+  <div class="display-flex position-relative g-16 flex-row s-g-4 xs-g-4" id="gap">
+  ```
+
+  That also removes a conditional `useResponsiveClasses` call that sat behind
+  an `if` with an eslint-disable on it — a rules-of-hooks violation that would
+  have broken the moment the condition changed between renders.
+
+  Only one app in the fleet passed custom breakpoints, and it was this repo's
+  own dev harness. `MIGRATING.md` §7 covers the change.
+
+### Fixed
+
+- **`xl` completes the breakpoint scale.** It is the one min-width step,
+  `(min-width: 1441px)`, and that is not an exception so much as the only
+  honest reading: `xl` has always meant "above all the others" — the layout
+  context resolves it as `Infinity` — so a max-width query cannot express it.
+  As min-width it matches the context exactly at every width, with no sixth
+  bucket invented for the widest screens and no change to what `xl` means.
+
+  `ServerFlex` and `ServerGrid` now start their cascade at `xl`, as their own
+  comment had claimed for as long as the code started at `l` and dropped it —
+  which is why an `xl` object only ever reached the client component. It
+  renders on the server like every other step now, and flows down into the
+  narrower ones:
+
+  ```
+  <Flex gap="16" xl={{ gap: "4" }} />
+  class="… g-16 xl-g-4 l-g-4 m-g-4 s-g-4 xs-g-4"
+  ```
+
+- **`Select` tracks focus across the whole control, and takes `focusRing`.**
+  Focus moves off the trigger and into the dropdown during a normal
+  interaction, so anything keyed to the trigger latched on and never came off.
+  Traced in Chromium: `focusin INPUT`, `focusout INPUT -> BUTTON`, and then
+  nothing at all while `document.activeElement` quietly became `body` — because
+  picking an option removes the focused button from the document, and removing
+  a focused element fires no `focusout`. No blur listener, on the trigger or
+  the wrapper, can see that.
+
+  Focus is watched at the document instead, on the two events that do fire:
+  focus landing elsewhere, and a pointer going down elsewhere. Only mounted
+  while focused, so an unfocused `Select` costs nothing. `focusRing` is back in
+  `SelectProps` now that the state behind it is honest.
+
+- **A token in a breakpoint prop did nothing.** `s={{ gap: "4" }}` is what the
+  docs and every example teach, and it resolved to nothing at all: no `.s-g-4`
+  class existed, `ServerFlex` emitted no breakpoint spacing classes, and
+  `ClientFlex`'s inline path guards on `typeof value === "number"`, so the
+  string fell through all three. Numbers worked, tokens did not, and neither
+  said so. Measured in Chromium at 600px before the fix: gap stayed at its
+  base 15px and padding at 22.5px; after, both resolve to the 4 token.
+
+  The same hole ran wider than spacing. `ServerFlex` was already writing
+  `.<bp>-opacity-*`, `.<bp>-z-index-*`, `.<bp>-transition-*`,
+  `.<bp>-pointer-events-*`, `.<bp>-scrollbar-minimal`, `.<bp>-flex-<n>` and
+  `.<bp>-flex-wrap` into the DOM, and not one of those classes existed — seven
+  more families of breakpoint prop that reached the page as a class name with
+  no rule behind it. They exist now.
+
+  The utility sheet grows from 8.6 KB to 14.4 KB gzipped for the whole
+  responsive matrix, which is the price of the props working at all.
+
+### Removed
+
+- **The field `focused` / `filled` styling, which never applied.** The rule was
+  `.base.focused, .base.filled` — a compound selector needing all three classes
+  on one element — but `focused` and `filled` went on the control, and on
+  `Select` onto a wrapper, never onto `.base`. It could not match, and the
+  border colour it set was the one `.base` already carried, so it was inert
+  twice over. Measured in Chromium: the border is identical across empty,
+  filled, focused and `Select`. Gone, along with the classes that fed it and
+  `Select`'s `isFilled`, which had no call site to set it, its write-only
+  `isFocused`, and a `findIndex` in `handleFocus` whose result was discarded
+  under a comment promising a highlight it never set.
+
+  Nothing changes visually. A field still shows no focus indicator by default;
+  `focusRing` above is the way to ask for one.
+
+### Changed
+
+- **Fields sit their label and value 2px further apart at m, l and xl.**
+  `--fld-gap`, the label-to-value distance in em of the value, was one ratio
+  (0.25) for every size; m, l and xl now take 0.375 — 4px to 6px at m, 4.5 to
+  6.75 at l, 5 to 7.5 at xl. The pair read tight once the label actually
+  floated. xs and s are unchanged: their label is scaled down far enough that
+  the base ratio still reads open. Field heights do not change — the ink block
+  re-centres, so the label rises by half the increase and the value drops by
+  half.
+- Core no longer imports `next/*` at runtime. Next.js apps keep 1.8.x behavior by
+  installing `NextAdapterProvider` from `@once-ui-system/core/next` in the root
+  layout; without it the five components listed above fall back to plain DOM.
+  Flipping peer dependencies stays a 2.0 concern.
+
+### Changed (docs site, not published code)
+
+- **`Input` had two `## Variants` headings**, one for the `variant` prop and one
+  for the four components built on it, which put two identical entries in the
+  page's own table of contents. The second is now `## Built on Input`.
+
+- **`basics/structure` was 1,724 lines and four headings.** `## Flex` ran from
+  line 12 to line 1,643, absorbing colour, radius, shadow, opacity, cursor,
+  zIndex, position and text along the way — a prop reference wearing a concepts
+  page's title, while `components/flex` and `components/grid` were 10-line stubs
+  pointing back at it. Structure is 162 lines now and describes the model: two
+  primitives, the page skeleton, gaps over margins, tokens, breakpoints. The
+  reference moved to Flex and Grid, which are real pages with real tables —
+  seven of them on Flex, 95 rows. The colour-usage examples the split would have
+  dropped moved to `basics/color`, which documented the tokens but never how to
+  apply them.
+- **The chart pages document themselves now.** `lineChart`, `barChart`,
+  `pieChart` and `lineBarChart` carried hand-written tables because the spec had
+  nothing to generate from; with the generator fixed they resolve from it, so a
+  renamed prop or a changed default cannot drift past them. Defaults come from
+  the source rather than from whoever last edited the page. The gauges, which
+  were already generated, gained the prose they were missing — the thing that
+  made them look unfinished next to their neighbours. `data/setup` gained the
+  full `ChartProps` table, which is where every chart's `...chart` row points.
+- **Props tables can document a mixin.** `Flex` has 5 props of its own and 83
+  across six shared mixins, so the layout pages needed those spelled out rather
+  than collapsed into `...flex`. `<PropsTable mixin="SpacingProps" />` resolves
+  from the same generated spec, a group at a time, and every other page keeps the
+  short spread row. A component no longer lists a spread row pointing at itself.
+- **Every page URL loses its `/once-ui/` prefix**, and the nav is restructured
+  around it. The old paths 308-redirect from a generated map, so nothing that
+  links to them breaks; `scripts/check-urls.mjs` fails the build on an internal
+  link no redirect covers.
+- **The changelog and roadmap pages are retired.** This file and `ROADMAP.md` are
+  the source of truth, and the docs pages drifted from them; the changelog entry
+  in the nav points at GitHub releases, which are generated from here.
+- **Props tables are generated from `ai/spec.json`** rather than maintained by
+  hand, so a table cannot go stale against the type it documents. A page can
+  still override or append a row where the generated text needs help.
+- **The home page is rebuilt around intent** — learn, or build — with a prompt
+  library of copy-pasteable task prompts that point at the AI harness and the
+  block catalog, and a curated twelve-component entry path for a first visit.
+
+## [1.8.4] — 2026-08-28
+
+Classified **patch** per [RELEASING.md](RELEASING.md): a single bug fix, no
+API change of any kind. Cut from the tree that produced the published 1.8.3
+rather than from `main`, so it carries none of the 2.0 architecture work in
+flight on the release branch — the fix reaches `^1.8.x` consumers on their
+next install, with nothing to migrate.
+
+### Fixed
+
+- `ThemeInit`: the inline theme-bootstrap script threw
+  `ReferenceError: ThemeInit is not defined` on every page load in every consumer
+  app. A `ThemeInit.displayName = "ThemeInit"` assignment had been injected *inside*
+  the script's template literal (and the arrow function above it de-indented),
+  so the emitted `<script>` referenced a module-scope binding that does not exist
+  in the browser. The throw was swallowed by the script's own `try/catch`, which
+  then hard-set `data-theme="dark"`.
+
+  Effect: the script's whole point — applying the saved theme and style overrides
+  *before* first paint — never ran. A visitor with `data-theme=light` saved got a
+  dark flash on every navigation, and saved `data-brand`/`data-neutral` overrides
+  flashed the config defaults until React hydrated and the provider corrected them.
+  Present in source, so every published version carrying this file is affected.
+
+  The `catch` fallback no longer hardcodes `dark` either: it resolves
+  `prefers-color-scheme`, since forcing dark on a light-mode visitor is a worse
+  failure than the one it is recovering from.
+
+  A new `theme-init.test.tsx` parses *and executes* the emitted script against
+  jsdom — asserting it references nothing from module scope, throws nothing, and
+  actually applies saved theme and style overrides — so this class of corruption
+  fails tests instead of shipping. Verified end-to-end in a consumer app: with
+  a saved `light` theme and `cyan` brand on a dark-preferring OS, first paint went
+  from `theme=dark, brand=blue` (plus the console error) to `theme=light,
+  brand=cyan` with a clean console.
+
+## [1.8.3] — 2026-08-26
+
+Classified **patch** per [RELEASING.md](RELEASING.md): restores documented behavior
+(broken subpath resolution) and AI-harness validity, with no API surface changes.
+
+### Fixed
+
+- The `./icons`, `./types`, and `./interfaces` subpath exports pointed at
+  `dist/<name>/index.js` while the build emits `dist/<name>.js`, leaving all three
+  unresolvable for every consumer (bundlers included) in the published 1.8.0–1.8.2.
+  The exports map now points at the emitted files, and a new
+  `package-exports.test.ts` fails on any exports path the build does not produce.
+- The AI harness shipped in 1.8.2 was still stamped 1.8.1 (`ai/manifest.json`,
+  `ai/catalog.json`, generated 2026-07-30). Artifacts are regenerated at 1.8.3, and a
+  new `ai-manifest-sync.test.ts` enforces the AI-consumer rule from RELEASING.md —
+  harness version must match package version — so this drift class now fails tests.
+- `apps/docs/public/ai/` claimed to be "synced from @once-ui-system/core on build"
+  but no sync step existed, so `docs.once-ui.com/ai/*` could serve stale or missing
+  artifacts. A `sync-ai` script now runs before every docs dev/build.
+- `DropdownWrapper` with `fillWidth`: the size middleware widened only the invisible
+  floating container while the visible panel (`Dropdown`) stayed content-sized —
+  on `-end` placements the panel rendered detached at the container's left edge,
+  reading as broken positioning. The panel now fills the container.
+- `DropdownWrapper` with `fillWidth`: removed the hidden 200px width floor
+  (`Math.max(triggerWidth, 200)`). `fillWidth` now means exactly the trigger's
+  width; small triggers no longer get a dropdown overhanging past their edge.
+  Same class of fix as 1.8.2's removal of the 320px content-dropdown floor.
+
+### Changed
+
+- Backfilled changelog for 1.8.2 (below), which was published without an entry.
+
+## [1.8.2] — 2026-08-02
+
+Classified **patch**: single bug fix, no API surface changes. Published without a
+changelog entry; backfilled in 1.8.3.
+
+### Fixed
+
+- Removed the forced 320px default min-width on content-sized dropdowns
+  (`DropdownWrapper`), restoring content-driven sizing.
+
+## [1.8.1] — 2026-07-30
+
+Classified **patch** per [RELEASING.md](RELEASING.md): bug fixes restoring documented
+behavior and AI-harness validity, with no API surface changes.
+
+### Fixed
+
+- `ai/gotchas.json` was invalid JSON in 1.8.0 — the `Icon.names` entry had lost its
+  key line, so any consumer of the AI harness that parsed the file failed. Restored the
+  key; the file now parses and all 21 gotcha entries are reachable.
+- `Table`: corrected CSS module classes and design tokens (`--surface-background`,
+  neutral borders, camelCase module classes aligned with `Table.tsx`) so sortable
+  headers, column alignment, striped/hover rows, and sticky header render as intended.
+
+### Changed (repo tooling, not published code)
+
+- Biome configs migrated to the 2.5.6 schema (they trailed on 2.4.13 while the CLI was
+  2.5.6), with git-ignore integration enabled and generated artifacts excluded from
+  checks — lint now reports real findings in shipped source instead of noise from
+  `dist/` and generated JSON. `apps/dev` and `apps/docs` got the missing
+  `@biomejs/biome` devDependency so their `lint`/`format` scripts actually run.
+- Removed dead ESLint remnants (`apps/dev/eslint.config.mjs`,
+  `apps/docs/.eslintrc.json`, unused `eslint`/`eslint-config-next` dependencies) —
+  Next 16 removed `next lint`, and all lint scripts already point at Biome.
+
+### Security
+
+- Patched 7 transitive dependency advisories via `pnpm.overrides` (`postcss`, `ws`,
+  `flatted`, `yaml`, `immutable`, `fast-uri`, `@eslint/plugin-kit`), re-applied against
+  the 1.8.0 lockfile, plus `sharp` pinned to `^0.35.3` (libvips CVEs; within the
+  package's declared peer range). None of the package's own runtime dependencies were
+  affected — see the triage entries in `ROADMAP.md` §5. Remaining audit findings are
+  all app-level/dev major-version bumps (`next`, `vite`, `webpack`, `esbuild`,
+  `brace-expansion` via minimatch@3), tracked as scoped follow-ups.
+
+## [1.8.0] — 2026-07-29
+
+Community PR [#115](https://github.com/once-ui-system/core/pull/115) (@divyanshudhruv),
+the Prism grammar fix [#117](https://github.com/once-ui-system/core/pull/117), and the
+release-integration fixes from [#120](https://github.com/once-ui-system/core/pull/120).
+Classified **minor** per [RELEASING.md](RELEASING.md): new component props, `TextWeight`
+widening, and a runtime dependency swap (`classnames` → `clsx`).
+
+### Added
+
+- `Dialog`: `flush` prop (full-bleed, headerless dialogs) and `hideClose` prop ([#115])
+- `Checkbox` / `RadioButton`: `hoverable` prop to suppress the hover pulse ([#115])
+- `CodeBlock`: `background` and `hideCode` props ([#115])
+- `TextWeight`: new `normal` (400) and `medium` (500) variants with matching
+  `--font-weight-display-*` tokens and `.font-normal` / `.font-medium` utilities ([#115])
+- Per-component responsive breakpoint prop types (`FlexBreakpointProps`,
+  `GridBreakpointProps`, `TextBreakpointProps`, …) ([#115])
+- `unoptimized` prop on image-rendering components (`Carousel`, `CompareImage`,
+  `OgCard`, `Swiper`) ([#120])
+
+### Fixed
+
+- `Checkbox` / `RadioButton`: SSR hydration mismatches — ids now come from `useId()`
+  instead of `Math.random()` ([#115])
+- `RadioButton`: unchecked border visible in dark mode ([#115])
+- Charts (`BarChart`, `LineChart`, `LineBarChart`, `PieChart`): empty charts no longer
+  collapse to zero height ([#115])
+- `CodeBlock`: Prism grammars now resolve for `md`, `mdx`, `dockerfile`, and shell
+  aliases (`sh`/`shell`/`zsh`); plain-text languages no longer warn ([#117])
+- `ScrollLock`: regression fix from release integration; the four long-standing
+  jsdom test failures (`Dialog` inert + `ScrollLock` wheel) now pass — full suite
+  green at 92/92 ([#120])
+- Sass deprecation warning from an unused `@import` in `Toaster.module.scss` ([#115])
+
+### Changed
+
+- `classnames` replaced with `clsx` (identical API, smaller bundle) ([#115])
+- Package `exports` map: `types` conditions added on all subpaths (`types` first,
+  `import`/`require` preserved — the interim `require` drop was caught in review and
+  restored in [#115]); CJS consumers unaffected
+- Several components converted from `React.FC` to `forwardRef` ([#115])
+- `DropdownWrapper` floating-ui sizing/flip behavior (affects `Select`, `DateInput`,
+  `DateRangeInput`, `ContextMenu`, `EmojiPicker`, `MegaMenu`) ([#115])
+- `DatePicker`: year picker layout simplified, default year range widened to ±25 ([#115])
+- Runtime deps bumped within their majors: `@floating-ui/react-dom`, `date-fns`,
+  `react-icons`, `recharts`; `sharp` peer range widened to allow `^0.35` ([#115])
+
+[#115]: https://github.com/once-ui-system/core/pull/115
+[#117]: https://github.com/once-ui-system/core/pull/117
+[#120]: https://github.com/once-ui-system/core/pull/120
+
+## [1.7.13] — 2026-07-25
+
+- Agent harness discovery: `AGENTS.md` + `ai/manifest.json` shipped in the npm package
+  as the authoritative entry point for AI-assisted code generation
+- `fix(server)`: stopped re-exporting `./server` from the main package entry — first
+  step toward isolating server-only code
+- Security: XSS fixes in `Schema` JSON-LD output and `CodeBlock` diff rendering
+- Restored `DropdownWrapper`'s `isOpen` prop for backward compatibility
+- Docs fixes across the documentation site
+
+## [1.7.0] — 2026-05-06
+
+First community-driven release. Highlights (full notes on
+[GitHub](https://github.com/once-ui-system/core/releases/tag/v1.7.0)):
+
+- Recharts, PrismJS, CompressorJS and Sharp became optional/peer dependencies
+- New components: `ScrollContainer`, `SplitView`, `Modal`, `BlobFx`, `FadingLettersFx`
+- Size and variant expansions across `Button`, `IconButton`, `ToggleButton`, `Input`,
+  `Textarea`; `Media` video controls
+- Versions 1.7.1–1.7.12 shipped to npm without GitHub releases; their contents are part
+  of the Week 4 reconciliation
+
+## [1.6.0] — 2026-02-03
+
+- `Flex`/`Grid`: CSS-value size props, `translateX/Y`, numeric REM spacing, `border`
+  boolean shorthands
+- New utilities: `ScrollLock`, `ThemeInit`
+- `Heading`/`Text`: `family` prop
+- Full notes on [GitHub](https://github.com/once-ui-system/core/releases/tag/v1.6.0)
+
+## Earlier
+
+See [GitHub releases](https://github.com/once-ui-system/core/releases) for 1.5.x and
+older.

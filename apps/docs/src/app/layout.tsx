@@ -1,0 +1,141 @@
+import '@once-ui-system/foundations/css/styles.css';
+import '@once-ui-system/foundations/css/tokens.css';
+import '../resources/custom.scss';
+
+import classNames from "clsx";
+
+import { ContentPanel, Footer, Header, Sidebar } from "@/product";
+import { baseURL } from "@/resources";
+
+import { Analytics } from "@vercel/analytics/react"
+
+import { Background, Column, Flex, Meta, ThemeInit, VisuallyHidden } from "@once-ui-system/core";
+import { dataStyle, layout, schema, style } from "../resources/once-ui.config";
+import { meta } from "@/resources";
+import { currentVersion } from "@/resources/versions";
+import { Providers } from '@/product/Providers';
+
+import Script from "next/script";
+import { feedback } from "@/resources/feedback";
+import { Geist } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
+
+const heading = Geist({
+  variable: "--font-heading",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const body = Geist({
+  variable: "--font-body",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const label = Geist({
+  variable: "--font-label",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const code = Geist_Mono({
+  variable: "--font-code",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const fonts = {
+  heading: heading,
+  body: body,
+  label: label,
+  code: code,
+};
+
+export async function generateMetadata() {
+  const baseMetadata = Meta.generate({
+    title: meta.home.title,
+    description: meta.home.description,
+    baseURL: baseURL,
+    path: meta.home.path,
+    image: meta.home.image
+  });
+
+  return {
+    ...baseMetadata,
+    metadataBase: new URL(`${baseURL}`),
+    openGraph: {
+      ...baseMetadata.openGraph,
+      siteName: meta.home.title,
+      locale: schema.locale,
+    },
+    // Only the stable version is indexed, so search results land on the docs
+    // for the release people install by default.
+    robots: {
+      index: currentVersion.status === "stable",
+      follow: true,
+      googleBot: {
+        index: currentVersion.status === "stable",
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
+    },
+  };
+}
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <>
+      <Flex
+        as="html"
+        lang="en"
+        suppressHydrationWarning
+        data-scroll-behavior="smooth"
+        className={classNames(
+          fonts.heading.variable,
+          fonts.body.variable,
+          fonts.label.variable,
+          fonts.code.variable,
+        )}
+      >
+        <head>
+          <ThemeInit config={style} dataStyle={dataStyle} />
+        </head>
+        <Providers>
+          <Column background="page" as="body" fillWidth margin="0" padding="0" style={{ minHeight: "100vh" }}
+            scrollbar="default">
+            {/* First stop on Tab: past the header and the sidebar's links. */}
+            <VisuallyHidden focusable>
+              <a href="#main-content">Skip to content</a>
+            </VisuallyHidden>
+            <Header />
+            <Flex
+              fillWidth
+              flex={1}
+            >
+              <Flex horizontal="center" maxWidth={layout.body.width} minHeight="0">
+                <Sidebar m={{hide: true}} paddingRight="2" />
+                <ContentPanel>{children}</ContentPanel>
+              </Flex>
+            </Flex>
+            <Footer />
+          </Column>
+        </Providers>
+        <Analytics />
+        {/* Chirio's board widget, filling the header's Feedback and What's new
+            drawer (FeedbackButtons), so it draws no button of its own. */}
+        <Script
+          src={`${feedback.chirio}/board-widget.js`}
+          data-board={feedback.board}
+          data-launcher="false"
+          strategy="afterInteractive"
+        />
+      </Flex>
+    </>
+  );
+}

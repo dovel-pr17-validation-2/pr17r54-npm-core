@@ -1,0 +1,19 @@
+.emojiButton {
+  will-change: transform;
+  contain: layout style paint;
+  transition: transform 0.1s ease;
+  
+  &:focus-visible {
+    transform: scale(1.05);
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+  
+  &:focus-visible {
+    background: var(--neutral-alpha-weak) !important;
+  }
+}

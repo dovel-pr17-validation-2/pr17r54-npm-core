@@ -1,0 +1,26 @@
+{
+ "name": "Swatch",
+ "group": "data",
+ "importFrom": "@once-ui-system/core/data",
+ "props": {
+  "color": "!string",
+  "size": "\"s\" | \"m\" = m",
+  "variant": "ChartVariant"
+ },
+ "tags": [
+  "data",
+  "chart"
+ ],
+ "pairsWith": [
+  "Legend",
+  "DataTooltip"
+ ],
+ "mixinsRef": [],
+ "types": {
+  "ChartVariant": [
+   "flat",
+   "outline",
+   "gradient"
+  ]
+ }
+}

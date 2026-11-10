@@ -1,0 +1,135 @@
+---
+title: "LayoutProvider"
+summary: "The LayoutProvider component creates a listener for the Flex and Grid components to track window size."
+updatedAt: "2026-10-10"
+docs: "once-ui/contexts/layoutProvider.mdx"
+github: "contexts/LayoutProvider.tsx"
+navLabel: "LayoutProvider"
+navIcon: "chip"
+---
+
+The `LayoutProvider` component is a context provider that creates a listener for the Flex and Grid components to track window size, and installs the framework adapters that links and images render through.
+
+## Simple setup
+
+Wrap your app with `LayoutProvider`.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codeHeight={24}
+  lineNumbers
+  codes={[
+    {
+      code:
+`<LayoutProvider>
+    {children}
+</LayoutProvider>`,
+      language: "tsx",
+      label: "layout.tsx"
+    }
+  ]}
+/>
+
+## Next.js
+
+In a Next.js app, import `LayoutProvider` from `@once-ui-system/core/next`. It is the same provider with the Next adapters installed, so `SmartLink`, `Button`/`Card`/`ToggleButton` with an `href`, `Media`, `Logo`, `MegaMenu` and `Kbar` route through `next/link` and `next/image`. The export from the package root installs the plain DOM adapters instead: everything still renders, as a plain `<a>` and `<img>`, which is why it is easy to miss. `npx once-ui-validate-ai-code` flags it.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codeHeight={32}
+  lineNumbers
+  codes={[
+    {
+      code:
+`import { IconProvider, ToastProvider, ThemeProvider, DataThemeProvider } from "@once-ui-system/core";
+import { LayoutProvider } from "@once-ui-system/core/next";
+
+export function Providers({ children }: {
+    children: React.ReactNode
+}) {
+    return (
+      <LayoutProvider>
+        <ThemeProvider>
+          <DataThemeProvider>
+            <ToastProvider>
+              <IconProvider>
+                {children}
+              </IconProvider>
+            </ToastProvider>
+          </DataThemeProvider>
+        </ThemeProvider>
+      </LayoutProvider>
+    );
+}`,
+      language: "tsx",
+      highlight: "2",
+      label: "Providers.tsx",
+    },
+  ]}
+/>
+
+The breakpoints are fixed since 2.0, so `LayoutProvider` no longer takes a `breakpoints` prop. See [Breakpoints](/basics/responsive).
+
+## API reference
+
+### LayoutProvider
+
+<PropsTable
+  component="LayoutProvider"
+/>
+## useLayout
+
+`useLayout()` reads the resolved breakpoint state. Use it when a decision cannot
+be expressed with the responsive props — mounting a different component per
+breakpoint, say, rather than styling one. It throws outside a `LayoutProvider`.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codes={[
+    {
+      code:
+`const { currentBreakpoint, maxWidth } = useLayout();
+
+// At or below the s breakpoint, render the sheet instead of the popover.
+return maxWidth("s") ? <Sheet {...props} /> : <Popover {...props} />;`,
+      language: "tsx",
+      label: "useLayout"
+    }
+  ]}
+/>
+
+`width` is `0` on the server and on the first client render, so branch on it
+only inside an effect — or branch on `currentBreakpoint`, which is resolved
+before paint.
+
+<PropsTable
+  label="Returns"
+  content={[
+    ["currentBreakpoint", ["xs", "s", "m", "l", "xl"], "-", "The breakpoint the viewport currently sits in."],
+    ["width", "number", "0", "Viewport width in pixels. 0 until measured."],
+    ["breakpoints", "Record<BreakpointKey, number>", "DEFAULT_BREAKPOINTS", "The breakpoint map."],
+    ["isBreakpoint", "(key: BreakpointKey) => boolean", "-", "True when the viewport is exactly at that breakpoint."],
+    ["maxWidth", "(key: BreakpointKey) => boolean", "-", "True at or below that breakpoint."],
+    ["minWidth", "(key: BreakpointKey) => boolean", "-", "True above that breakpoint."],
+  ]}
+/>
+
+### DEFAULT_BREAKPOINTS
+
+The widths every breakpoint class and `useLayout` use. Exported for reading; they are not configurable.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codes={[
+    {
+      code:
+`{ xs: 480, s: 768, m: 1024, l: 1440, xl: Infinity }`,
+      language: "ts",
+      label: "DEFAULT_BREAKPOINTS"
+    }
+  ]}
+/>

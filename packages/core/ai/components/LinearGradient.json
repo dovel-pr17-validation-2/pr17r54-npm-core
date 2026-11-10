@@ -1,0 +1,36 @@
+{
+ "name": "LinearGradient",
+ "group": "data",
+ "importFrom": "@once-ui-system/core/data",
+ "props": {
+  "id": "!string",
+  "color": "!string",
+  "x1": "string = 0",
+  "y1": "string = 0",
+  "x2": "string = 0",
+  "y2": "string = 1",
+  "stops": "GradientStop[]",
+  "variant": "ChartVariant"
+ },
+ "tags": [
+  "data",
+  "chart"
+ ],
+ "pairsWith": [
+  "LineChart",
+  "BarChart"
+ ],
+ "mixinsRef": [],
+ "types": {
+  "ChartVariant": [
+   "flat",
+   "outline",
+   "gradient"
+  ],
+  "GradientStop": {
+   "offset": "!string",
+   "opacity": "!number",
+   "variant": "ChartVariant"
+  }
+ }
+}

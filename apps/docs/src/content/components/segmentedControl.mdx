@@ -1,0 +1,383 @@
+---
+title: "SegmentedControl"
+summary: "The SegmentedControl component allows users to select a single option from a set of horizontally arranged buttons. It supports keyboard navigation and customizable options."
+updatedAt: "2025-05-09"
+docs: "once-ui/components/segmentedControl.mdx"
+github: "components/SegmentedControl.tsx"
+navLabel: "Segmented Control"
+navIcon: "components"
+---
+
+Use this component for toggle-style selection between discrete options. It supports keyboard interaction, styling, and controlled or uncontrolled usage.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  preview={
+    <SegmentedControl
+      fillWidth={false}
+      buttons={[
+        { value: "day", label: "Day" },
+        { value: "week", label: "Week" },
+        { value: "month", label: "Month" },
+      ]}
+    />
+  }
+  codes={[
+    {
+      code:
+`<SegmentedControl
+    fillWidth={false}
+    buttons={[
+      { value: "day", label: "Day" },
+      { value: "week", label: "Week" },
+      { value: "month", label: "Month" },
+    ]}
+    onChange={(value) => console.log(value)}
+/>`,
+      language: "tsx",
+      label: "Basic usage"
+    }
+  ]}
+/>
+
+## Sliding background
+
+The selected background slides from one option to the next, even when the options have different widths. Visitors who ask for reduced motion see it move without the slide. Pass `sliding={false}` for the old jump; `compact` controls never slide.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  preview={
+    <Row fillWidth horizontal="center">
+      <SegmentedControl
+        fillWidth={false}
+        buttons={[
+          { value: "all", label: "All" },
+          { value: "unread", label: "Unread" },
+          { value: "mentions", label: "Mentions and replies" },
+          { value: "archive", label: "Archive" },
+        ]}
+      />
+    </Row>
+  }
+  codes={[
+    {
+      code:
+`<SegmentedControl
+    fillWidth={false}
+    buttons={[
+      { value: "all", label: "All" },
+      { value: "unread", label: "Unread" },
+      { value: "mentions", label: "Mentions and replies" },
+      { value: "archive", label: "Archive" },
+    ]}
+/>`,
+      language: "tsx",
+      label: "Sliding"
+    },
+    {
+      code:
+`<SegmentedControl
+    sliding={false}
+    buttons={[
+      { value: "all", label: "All" },
+      { value: "unread", label: "Unread" },
+    ]}
+/>`,
+      language: "tsx",
+      label: "Without the slide"
+    }
+  ]}
+/>
+
+## External state
+
+Use `selected` to manage the selected state from the parent.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  preview={
+    <Row fillWidth horizontal="center">
+      <SegmentedControl
+        fillWidth={false}
+        value="month"
+        buttons={[
+          { value: "day", label: "Day" },
+          { value: "week", label: "Week" },
+          { value: "month", label: "Month" },
+        ]}
+      />
+      </Row>
+  }
+  codes={[
+    {
+      code:
+`<SegmentedControl
+    fillWidth={false}
+    value="month"
+    buttons={[
+      { value: "day", label: "Day" },
+      { value: "week", label: "Week" },
+      { value: "month", label: "Month" },
+    ]}
+    onChange={(value) => console.log(value)}
+/>`,
+      language: "tsx",
+      label: "External state"
+    }
+  ]}
+/>
+
+## Internal state
+
+Use `defaultValue` to define an initial active button in uncontrolled mode. Don't use it along with the `value` prop.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  preview={
+    <Row fillWidth horizontal="center">
+      <SegmentedControl
+        fillWidth={false}
+        defaultValue="week"
+        buttons={[
+          { value: "day", label: "Day" },
+          { value: "week", label: "Week" },
+          { value: "month", label: "Month" },
+        ]}
+      />
+      </Row>
+  }
+  codes={[
+    {
+      code:
+`<SegmentedControl
+    fillWidth={false}
+    defaultValue="week"
+    buttons={[
+      { value: "day", label: "Day" },
+      { value: "week", label: "Week" },
+      { value: "month", label: "Month" },
+    ]}
+    onChange={(value) => console.log(value)}
+/>`,
+      language: "tsx",
+      label: "Internal state"
+    }
+  ]}
+/>
+
+## Radio group
+
+A tab strip is the default, for switching views. For one choice among settings, `semantics="radio"` makes the segments a `radiogroup` of `radio`s: the arrow keys move and choose, as native radios do. Name it with `aria-label` or `aria-labelledby`.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  preview={
+    <Row fillWidth horizontal="center">
+      <SegmentedControl
+        fillWidth={false}
+        semantics="radio"
+        aria-label="Density"
+        defaultValue="comfortable"
+        buttons={[
+          { value: "compact", label: "Compact" },
+          { value: "comfortable", label: "Comfortable" },
+        ]}
+      />
+    </Row>
+  }
+  codes={[
+    {
+      code:
+`<SegmentedControl
+    fillWidth={false}
+    semantics="radio"
+    aria-label="Density"
+    defaultValue="comfortable"
+    buttons={[
+      { value: "compact", label: "Compact" },
+      { value: "comfortable", label: "Comfortable" },
+    ]}
+/>`,
+      language: "tsx",
+      label: "Radio group"
+    }
+  ]}
+/>
+
+## Compact
+
+Use `compact` to create a compact variant.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  preview={
+    <Row fillWidth horizontal="center">
+      <SegmentedControl
+        compact
+        defaultValue="week"
+        buttons={[
+          { value: "day", label: "Day" },
+          { value: "week", label: "Week" },
+          { value: "month", label: "Month" },
+        ]}
+      />
+      </Row>
+  }
+  codes={[
+    {
+      code:
+`<SegmentedControl
+    compact
+    defaultValue="week"
+    buttons={[
+      { value: "day", label: "Day" },
+      { value: "week", label: "Week" },
+      { value: "month", label: "Month" },
+    ]}
+    onChange={(value) => console.log(value)}
+/>`,
+      language: "tsx",
+      label: "Compact"
+    }
+  ]}
+/>
+
+## Controlled state
+
+Control the selected value externally with the `value` prop.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  preview={
+    <Row fillWidth horizontal="center">
+      <SegmentedControl
+        fillWidth={false}
+        value="month"
+        buttons={[
+          { value: "day", label: "Day" },
+          { value: "week", label: "Week" },
+          { value: "month", label: "Month" },
+        ]}
+      />
+    </Row>
+  }
+  codes={[
+    {
+      code:
+`<SegmentedControl
+  fillWidth={false}
+  value="month"
+  buttons={[
+    { value: "day", label: "Day" },
+    { value: "week", label: "Week" },
+    { value: "month", label: "Month" },
+  ]}
+  onChange={(value) => console.log(value)}
+/>`,
+      language: "tsx",
+      label: "Controlled"
+    }
+  ]}
+/>
+
+## Fill width
+
+Distribute the button widths evenly across the container.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  preview={
+    <SegmentedControl
+      buttons={[
+        { value: "a", label: "A" },
+        { value: "b", label: "B" },
+        { value: "c", label: "C" },
+      ]}
+    />
+  }
+  codes={[
+    {
+      code:
+`<SegmentedControl
+  buttons={[
+    { value: "a", label: "A" },
+    { value: "b", label: "B" },
+    { value: "c", label: "C" },
+  ]}
+  onChange={(value) => console.log(value)}
+/>`,
+      language: "tsx",
+      label: "Fill width"
+    }
+  ]}
+/>
+
+## Narrow spaces
+
+Options that do not fit scroll behind a Next button. In a narrow sidebar that clips the last one; `scroll={false}` keeps them in a plain row that shares the width equally and truncates a label that does not fit. An option's `description` adds a second, dimmer line under its label. Without `onChange` the control keeps its own selection, starting from `defaultValue`.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  preview={
+    <Column gap="16" maxWidth={16} fillWidth>
+      <SegmentedControl
+        scroll={false}
+        aria-label="Library view"
+        buttons={[
+          { value: "library", label: "Library" },
+          { value: "projects", label: "Projects" },
+          { value: "shared", label: "Shared" },
+        ]}
+      />
+      <SegmentedControl
+        scroll={false}
+        aria-label="Answer mode"
+        defaultValue="deep"
+        buttons={[
+          { value: "fast", label: "Fast", description: "Quick answers" },
+          { value: "deep", label: "Deep", description: "Reads sources" },
+        ]}
+      />
+    </Column>
+  }
+  codes={[
+    {
+      code:
+`<SegmentedControl
+  scroll={false}
+  aria-label="Answer mode"
+  defaultValue="deep"
+  buttons={[
+    { value: "fast", label: "Fast", description: "Quick answers" },
+    { value: "deep", label: "Deep", description: "Reads sources" },
+  ]}
+/>`,
+      language: "tsx",
+      label: "Narrow spaces"
+    }
+  ]}
+/>
+
+## API reference
+
+<PropsTable
+  component="SegmentedControl"
+  describe={{
+    compact: "Tighter padding, for dense toolbars.",
+    semantics: "`tabs` (a tab strip) or `radio` (one choice from a set of settings, a radio group).",
+    scroll: "`false` shares the width between the options and truncates labels, instead of scrolling them.",
+  }}
+  content={[
+    ["className"],
+    ["style"]
+  ]}
+/>

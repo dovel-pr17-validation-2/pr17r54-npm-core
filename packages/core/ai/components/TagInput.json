@@ -1,0 +1,27 @@
+{
+ "name": "TagInput",
+ "group": "components",
+ "extends": [
+  "Input"
+ ],
+ "props": {
+  "value": "string[]",
+  "defaultValue": "readonly string[]",
+  "onChange": "(value: string[]) => void",
+  "labels": "TagInputLabels"
+ },
+ "tags": [
+  "form"
+ ],
+ "pairsWith": [
+  "Input",
+  "Chip"
+ ],
+ "mixinsRef": [],
+ "types": {
+  "TagInputLabels": {
+   "remove": "(tag: string) => string",
+   "removed": "(tag: string) => string"
+  }
+ }
+}

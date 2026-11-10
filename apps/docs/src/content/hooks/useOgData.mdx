@@ -1,0 +1,365 @@
+---
+title: "useOgData"
+summary: "React hook for fetching and displaying Open Graph metadata from URLs."
+updatedAt: "2026-02-22"
+docs: "once-ui/hooks/useOgData.mdx"
+github: "hooks/useFetchOg.ts"
+navLabel: "useOgData"
+navIcon: "code"
+---
+
+The `useOgData` hook fetches Open Graph metadata from URLs, including title, description, image, and favicon. It automatically handles image proxying for external sources and provides loading states.
+
+**Used in components:** [OgCard](/components/ogCard)
+
+<Feedback marginTop="16" marginBottom="24" description="Most of the time you don't need to use this hook directly. The OgCard component already uses it internally to fetch and display Open Graph previews. Use this hook when you need custom rendering or additional control over the fetching logic."/>
+
+## Features
+
+- Fetches OG metadata from any URL
+- Automatic image proxying for CORS-free display
+- Loading state management
+- Custom API endpoint support
+- Companion `useOgImage` hook for image-only fetching
+
+## Basic usage
+
+Fetch and display Open Graph data:
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codeHeight={24}
+  lineNumbers
+  codes={[
+    {
+      code:
+`import { useOgData } from '@once-ui-system/core';
+
+function LinkPreview({ url }: { url: string }) {
+  const { ogData, loading } = useOgData(url);
+
+  if (loading) return <div>Loading preview...</div>;
+  if (!ogData) return null;
+
+  return (
+    <div>
+      {ogData.image && <img src={ogData.image} alt={ogData.title} />}
+      <h3>{ogData.title}</h3>
+      <p>{ogData.description}</p>
+      <a href={ogData.url}>Visit site</a>
+    </div>
+  );
+}`,
+      language: "tsx",
+      label: "LinkPreview.tsx"
+    }
+  ]}
+/>
+
+## With custom endpoints
+
+Use custom API routes for fetching and proxying:
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codeHeight={28}
+  lineNumbers
+  codes={[
+    {
+      code:
+`import { useOgData } from '@once-ui-system/core';
+
+function CustomLinkPreview({ url }: { url: string }) {
+  const { ogData, loading } = useOgData(
+    url,
+    '/api/custom/fetch',  // Custom fetch endpoint
+    '/api/custom/proxy'   // Custom proxy endpoint
+  );
+
+  return (
+    <div>
+      {loading ? (
+        <Skeleton />
+      ) : (
+        <Card>
+          <img src={ogData?.image} alt={ogData?.title} />
+          <h3>{ogData?.title}</h3>
+          <p>{ogData?.description}</p>
+        </Card>
+      )}
+    </div>
+  );
+}`,
+      language: "tsx",
+      label: "CustomLinkPreview.tsx"
+    }
+  ]}
+/>
+
+## useOgImage hook
+
+For cases where you only need the image:
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codeHeight={20}
+  lineNumbers
+  codes={[
+    {
+      code:
+`import { useOgImage } from '@once-ui-system/core';
+
+function LinkThumbnail({ url }: { url: string }) {
+  const { ogImage, loading } = useOgImage(url);
+
+  if (loading) return <Skeleton shape="block" width={12} height={12} />;
+  if (!ogImage) return <DefaultThumbnail />;
+
+  return (
+    <img
+      src={ogImage}
+      alt="Link thumbnail"
+      width={200}
+      height={200}
+    />
+  );
+}`,
+      language: "tsx",
+      label: "LinkThumbnail.tsx"
+    }
+  ]}
+/>
+
+## With OgCard component
+
+Combine with the OgCard component for rich previews:
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codeHeight={16}
+  lineNumbers
+  codes={[
+    {
+      code:
+`import { OgCard } from '@once-ui-system/core';
+
+function RichLinkPreview({ url }: { url: string }) {
+  return (
+    <OgCard
+      url={url}
+      aspectRatio="16 / 9"
+      radius="l"
+      border="neutral-medium"
+    />
+  );
+}`,
+      language: "tsx",
+      label: "RichLinkPreview.tsx"
+    }
+  ]}
+/>
+
+## API Reference
+
+### useOgData
+
+<PropsTable
+  content={[
+    ["url", ["string", "null"], "-"],
+    ["customFetchUrl", "string", "OgRoutesProvider's fetch, or '/api/og/fetch'"],
+    ["customProxyUrl", "string", "OgRoutesProvider's proxy, or '/api/og/proxy'"]
+  ]}
+/>
+
+### Return value
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codeHeight={24}
+  lineNumbers
+  codes={[
+    {
+      code:
+`interface OgData {
+  title: string;
+  description: string;
+  image: string;
+  url: string;
+  faviconUrl?: string;
+}
+
+type UseOgDataResult = {
+  ogData: Partial<OgData> | null;
+  loading: boolean;
+};`,
+      language: "tsx",
+      label: "Return type"
+    }
+  ]}
+/>
+
+### useOgImage
+
+<PropsTable
+  content={[
+    ["url", ["string", "null"], "-"],
+    ["customFetchUrl", "string", "OgRoutesProvider's fetch, or '/api/og/fetch'"],
+    ["customProxyUrl", "string", "OgRoutesProvider's proxy, or '/api/og/proxy'"]
+  ]}
+/>
+
+### useOgImage return value
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codeHeight={12}
+  lineNumbers
+  codes={[
+    {
+      code:
+`type UseOgImageResult = {
+  ogImage: string | null;
+  loading: boolean;
+};`,
+      language: "tsx",
+      label: "Return type"
+    }
+  ]}
+/>
+
+## Required API routes
+
+This hook requires two server routes. In a Next.js app, use the ready-made [OG route handlers](/utils/ogRoutes):
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codeHeight={20}
+  lineNumbers
+  codes={[
+    {
+      code:
+`// app/api/og/fetch/route.ts
+import { createOgFetchRoute } from "@once-ui-system/core/next";
+
+export const { GET } = createOgFetchRoute();
+
+// app/api/og/proxy/route.ts
+import { createOgProxyRoute } from "@once-ui-system/core/next";
+
+export const { GET } = createOgProxyRoute();`,
+      language: "tsx",
+      label: "API routes"
+    }
+  ]}
+/>
+
+Elsewhere, build them on [`handleOGFetch`](/utils/handleOGFetch) and [`handleOGProxy`](/utils/handleOGProxy) from `@once-ui-system/core/server`.
+
+The hook calls `/api/og/fetch` and `/api/og/proxy` unless told otherwise: by its `customFetchUrl` and `customProxyUrl` arguments, or for every caller below it, by `OgRoutesProvider`:
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  lineNumbers
+  codes={[
+    {
+      code:
+`import { OgRoutesProvider } from "@once-ui-system/core";
+
+<OgRoutesProvider routes={{ fetch: "/og/fetch", proxy: "/og/proxy" }}>
+  {children}
+</OgRoutesProvider>`,
+      language: "tsx",
+      label: "Custom routes"
+    }
+  ]}
+/>
+
+## Image proxying
+
+The hook automatically proxies external images through your server to avoid CORS issues:
+
+- Images from the same origin are used directly
+- External images are routed through the proxy endpoint
+- The proxy adds appropriate cache headers
+
+## Error handling
+
+The hook handles errors gracefully:
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codeHeight={20}
+  lineNumbers
+  codes={[
+    {
+      code:
+`function SafeLinkPreview({ url }: { url: string }) {
+  const { ogData, loading } = useOgData(url);
+
+  if (loading) return <Skeleton />;
+  
+  if (!ogData) {
+    return (
+      <div>
+        <p>Unable to load preview</p>
+        <a href={url}>{url}</a>
+      </div>
+    );
+  }
+
+  return <OgCard url={url} />;
+}`,
+      language: "tsx",
+      label: "SafeLinkPreview.tsx"
+    }
+  ]}
+/>
+
+## Performance tips
+
+- **Conditional fetching**: Pass `null` as URL to skip fetching
+- **Memoize URLs**: Prevent unnecessary refetches
+- **Cache responses**: The proxy endpoint includes cache headers
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codeHeight={24}
+  lineNumbers
+  codes={[
+    {
+      code:
+`import { useMemo } from 'react';
+import { useOgData } from '@once-ui-system/core';
+
+function OptimizedPreview({ rawUrl }: { rawUrl: string | undefined }) {
+  // Only fetch when URL is valid
+  const url = useMemo(() => {
+    try {
+      return rawUrl ? new URL(rawUrl).href : null;
+    } catch {
+      return null;
+    }
+  }, [rawUrl]);
+
+  const { ogData, loading } = useOgData(url);
+
+  if (!url) return <div>Invalid URL</div>;
+  if (loading) return <Skeleton />;
+  
+  return <OgCard url={url} />;
+}`,
+      language: "tsx",
+      label: "OptimizedPreview.tsx"
+    }
+  ]}
+/>

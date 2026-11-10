@@ -1,0 +1,57 @@
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    scroll-margin-top: var(--static-space-80);
+}
+
+img {
+    user-select: none;
+}
+
+/* SELECTION */
+::selection {
+    background: var(--neutral-on-background-medium);
+    color: var(--neutral-background-strong);
+}
+
+/* LINK */
+a:not(.button) {
+    color: var(--brand-on-background-medium);
+    text-decoration: none;
+    transition: var(--transition-micro-medium);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.25em;
+    text-decoration-color: var(--neutral-border-strong) !important;
+
+    @media (hover: hover) {
+        &:hover {
+            text-decoration: none;
+            color: var(--brand-on-background-strong);
+        }
+    }
+}
+/* REDUCED MOTION
+   With `prefers-reduced-motion: reduce`, transitions and keyframe animations
+   end at once instead of moving: a dialog appears, an accordion opens, a
+   skeleton stops pulsing. The state change still happens, so nothing that
+   relies on `transitionend` or `animationend` waits forever. A loading
+   spinner is the exception, marked `data-motion="essential"`: stopped, it no
+   longer says that something is happening. */
+@media (prefers-reduced-motion: reduce) {
+    *:not([data-motion="essential"], [data-motion="essential"] *),
+    *:not([data-motion="essential"], [data-motion="essential"] *)::before,
+    *:not([data-motion="essential"], [data-motion="essential"] *)::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        animation-delay: 0s !important;
+        transition-duration: 0.01ms !important;
+        transition-delay: 0s !important;
+        scroll-behavior: auto !important;
+    }
+}

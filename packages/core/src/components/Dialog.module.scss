@@ -1,0 +1,46 @@
+@use "../styles/breakpoints.scss" as breakpoints;
+
+.overlay {
+    opacity: 0;
+    visibility: hidden;
+
+    &.open {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+.dialog {
+    max-width: 40rem;
+    max-height: 100%;
+    transform: scale(0.2);
+    opacity: 0;
+
+    &.open {
+        transform: scale(1);
+        opacity: 1;
+        visibility: visible;
+    }
+
+    @include breakpoints.m {
+        position: fixed;
+        bottom: max(var(--static-space-8), var(--safe-area-bottom, 0px));
+        left: max(var(--static-space-8), var(--safe-area-left, 0px));
+        right: max(var(--static-space-8), var(--safe-area-right, 0px));
+        top: max(var(--static-space-8), var(--safe-area-top, 0px));
+        max-width: calc(
+            100% - max(var(--static-space-8), var(--safe-area-left, 0px)) -
+                max(var(--static-space-8), var(--safe-area-right, 0px))
+        ) !important;
+    }
+}
+
+/* The overlay's `padding="l"`, pushed out to the safe areas where they are
+   wider. Doubled to win over the padding utility on the same element. */
+.overlay.overlay {
+    padding:
+        max(var(--responsive-space-l), var(--safe-area-top, 0px))
+        max(var(--responsive-space-l), var(--safe-area-right, 0px))
+        max(var(--responsive-space-l), var(--safe-area-bottom, 0px))
+        max(var(--responsive-space-l), var(--safe-area-left, 0px));
+}

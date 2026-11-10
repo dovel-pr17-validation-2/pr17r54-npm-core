@@ -1,0 +1,8 @@
+.accordion {
+    cursor: var(--cursor-pointer, pointer);
+    @media (hover: hover) {
+        &:hover {
+            background: var(--neutral-alpha-weak);
+        }
+    }
+}

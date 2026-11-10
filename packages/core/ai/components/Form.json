@@ -1,0 +1,47 @@
+{
+ "name": "Form",
+ "group": "components",
+ "props": {
+  "density": "\"stacked\" | \"tight\" | \"spacious\" = tight",
+  "columns": "FormColumns",
+  "size": "FieldSize",
+  "as": "\"div\" | \"form\" = div",
+  "onSubmit": "(event: React.FormEvent<HTMLFormElement>) => unknown",
+  "pending": "boolean",
+  "className": "string",
+  "style": "React.CSSProperties",
+  "children": "React.ReactNode"
+ },
+ "tags": [
+  "form",
+  "layout"
+ ],
+ "pairsWith": [
+  "Input",
+  "Select",
+  "Textarea",
+  "Button"
+ ],
+ "mixinsRef": [],
+ "types": {
+  "Breakpoint": [
+   "xl",
+   "l",
+   "m",
+   "s",
+   "xs"
+  ],
+  "FieldSize": [
+   "xl",
+   "l",
+   "m",
+   "s",
+   "xs",
+   "xxs"
+  ],
+  "FormColumns": [
+   "number",
+   "Partial<Record<Breakpoint, number>>"
+  ]
+ }
+}

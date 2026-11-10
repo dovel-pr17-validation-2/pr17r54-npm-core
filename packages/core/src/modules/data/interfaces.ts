@@ -1,0 +1,108 @@
+import type { DateRange } from "../../components/DateRangePicker";
+import type { Flex } from "../../components/Flex";
+import type { ColorValue, TShirtSizes } from "../../types";
+
+/**
+ * Recharts' own CurveType, inlined.
+ *
+ * Importing it left `recharts` in core's published .d.ts, so anyone who did
+ * not install the optional peer failed to typecheck even when their bundle
+ * never touched a chart. The interpolation names are a stable part of d3's
+ * shape API; the CurveFactory arm of recharts' union is deliberately dropped,
+ * as passing a factory was never part of this component's surface.
+ */
+type CurveType =
+  | "basis"
+  | "basisClosed"
+  | "basisOpen"
+  | "bumpX"
+  | "bumpY"
+  | "bump"
+  | "linear"
+  | "linearClosed"
+  | "natural"
+  | "monotoneX"
+  | "monotoneY"
+  | "monotone"
+  | "step"
+  | "stepBefore"
+  | "stepAfter";
+
+type ChartVariant = "flat" | "gradient" | "outline";
+type ChartMode = "categorical" | "divergent" | "sequential";
+type BarWidth = TShirtSizes | "fill" | number;
+type curveType = CurveType;
+
+interface DataPoint {
+  [key: string]: string | number | Date | undefined;
+  label?: string;
+}
+
+interface SeriesConfig {
+  key: string;
+  color?: ColorValue;
+}
+
+interface PresetsConfig {
+  display: boolean;
+  granularity: "year" | "month" | "week";
+}
+
+interface DateConfig {
+  start?: Date;
+  end?: Date;
+  max?: Date;
+  min?: Date;
+  dual?: boolean;
+  format?: string;
+  presets?: PresetsConfig;
+  selector?: boolean;
+  onChange?: (range: DateRange) => void;
+}
+
+interface LegendConfig {
+  display?: boolean;
+  direction?: "row" | "column";
+  position?:
+    | "top-left"
+    | "top-right"
+    | "bottom-left"
+    | "bottom-right"
+    | "top-center"
+    | "bottom-center";
+}
+
+interface ChartProps extends Omit<React.ComponentProps<typeof Flex>, "title" | "description"> {
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  series: SeriesConfig | SeriesConfig[];
+  /**
+   * One object per point: the x-axis value and a number per series key, as
+   * `DataPoint`. Rows typed with an `interface` (`RevenuePoint[]`) and
+   * `readonly` arrays are taken as they are; an interface has no index
+   * signature, so `DataPoint[]` alone rejected them.
+   */
+  data: readonly DataPoint[] | readonly object[];
+  legend?: LegendConfig;
+  date?: DateConfig;
+  emptyState?: React.ReactNode;
+  errorState?: React.ReactNode;
+  error?: boolean;
+  tooltip?: boolean;
+  grid?: "x" | "y" | "both" | "none";
+  axis?: "x" | "y" | "both" | "none";
+  variant?: ChartVariant;
+  loading?: boolean;
+}
+
+export type {
+  BarWidth,
+  ChartMode,
+  ChartProps,
+  ChartVariant,
+  curveType,
+  DataPoint,
+  DateConfig,
+  PresetsConfig,
+  SeriesConfig,
+};

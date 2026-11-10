@@ -1,0 +1,101 @@
+---
+title: "React Native"
+summary: "The basic Once UI components for React Native apps, with the same props and the same design tokens as the web package."
+updatedAt: "2026-10-18"
+docs: "once-ui/native/overview.mdx"
+github: "packages/native/README.md"
+navLabel: "Overview"
+navIcon: "components"
+---
+
+`@once-ui-system/native` brings Once UI's basic components to iOS and Android apps built with React Native. They take the same props as the web components and read the same design tokens, so a screen written with Once UI looks and reads the same on a phone.
+
+It is a preview. Most apps should keep shipping Once UI on phones as the web build wrapped in a native shell (the Stack mobile target); use this package when the app itself has to be native.
+
+<Row fillWidth horizontal="center" marginY="24">
+  <Media
+    src="/images/native/loyalty-card.png"
+    alt="A loyalty-card screen built with @once-ui-system/native"
+    aspectRatio="390 / 740"
+    maxWidth={20}
+    radius="l"
+    border="neutral-alpha-weak"
+  />
+</Row>
+
+## Install
+
+Needs React 19, React Native 0.79 or later (Expo SDK 53 and up) and `react-native-svg` 15, which Expo includes. Preview versions are published to the `next` tag. The [quick start](/native/quick-start) covers Expo and bare React Native apps, safe areas and fonts.
+
+<CodeBlock marginTop="8" marginBottom="24"
+codes={[
+  {
+    code: "npm install @once-ui-system/native@next",
+    language: "bash",
+    label: "npm"
+  }
+]} />
+
+## Usage
+
+Wrap the app in `ThemeProvider`. It takes the same style options as on the web, with the same defaults; `theme="system"` follows the device.
+
+<CodeBlock marginTop="8" marginBottom="24"
+codes={[
+  {
+    code:
+`import { Button, Column, Heading, Text, ThemeProvider } from "@once-ui-system/native";
+
+export default function App() {
+  return (
+    <ThemeProvider brand="orange" neutral="sand" solid="color">
+      <Column padding="20" gap="12" background="page" fill>
+        <Heading>Morning Coffee</Heading>
+        <Text onBackground="neutral-weak">Three more coffees and the next one is on us.</Text>
+        <Button label="Add stamp" onPress={() => {}} />
+      </Column>
+    </ThemeProvider>
+  );
+}`,
+    language: "tsx",
+    label: "App.tsx"
+  }
+]} />
+
+## Components
+
+Each component has its own page with examples, a props table and what differs from the web.
+
+| Group | Components |
+| --- | --- |
+| Layout | [`Flex`](/native/components/flex), [`Card`](/native/components/card), [`Line`](/native/components/line), [`Grid`](/native/components/grid), [`Scroller`](/native/components/scroller) |
+| Type | [`Text`](/native/components/text), [`Heading`](/native/components/heading) |
+| Actions | [`Button`](/native/components/button), [`IconButton`](/native/components/iconButton), [`ToggleButton`](/native/components/toggleButton), [`SegmentedControl`](/native/components/segmentedControl) |
+| Form controls | [`Input`](/native/form-controls/input), [`Textarea`](/native/form-controls/textarea), [`Select`](/native/form-controls/select), [`Checkbox`](/native/form-controls/checkbox), [`Switch`](/native/form-controls/switch), [`RadioGroup`](/native/form-controls/radioGroup), [`Chip`](/native/form-controls/chip), [`Slider`](/native/form-controls/slider), [`RangeSlider`](/native/form-controls/rangeSlider), [`NumberInput`](/native/form-controls/numberInput), [`PasswordInput`](/native/form-controls/passwordInput), [`SearchInput`](/native/form-controls/searchInput), [`OTPInput`](/native/form-controls/otpInput), [`Form`](/native/form-controls/form), [`Field`](/native/form-controls/field), [`Fieldset`](/native/form-controls/fieldset), [`SubmitButton`](/native/form-controls/submitButton), [`FormErrorSummary`](/native/form-controls/formErrorSummary), [`DatePicker`](/native/form-controls/datePicker), [`DateInput`](/native/form-controls/dateInput) |
+| Content | [`Icon`](/native/components/icon), [`Media`](/native/components/media), [`Avatar`](/native/components/avatar), [`AvatarGroup`](/native/components/avatarGroup), [`Badge`](/native/components/badge), [`Tag`](/native/components/tag), [`List`](/native/components/List), [`StatusIndicator`](/native/components/statusIndicator), [`User`](/native/components/user), [`BlockQuote`](/native/components/blockquote), [`Timeline`](/native/components/timeline), [`Kbd`](/native/components/kbd), [`InlineCode`](/native/components/inlineCode), [`CodeBlock`](/native/components/codeBlock), [`Markdown`](/native/components/markdown) |
+| Feedback | [`Feedback`](/native/components/feedback), [`ProgressBar`](/native/components/progressBar), [`Spinner`](/native/components/spinner), [`Skeleton`](/native/components/skeleton), [`Toast`](/native/components/toast), [`Banner`](/native/components/banner) |
+| Overlays and disclosure | [`Dialog`](/native/components/dialog), [`Drawer`](/native/components/drawer), [`Tabs`](/native/components/tabs), [`Accordion`](/native/components/accordion), [`DropdownWrapper`](/native/components/dropdownWrapper), [`ContextMenu`](/native/components/contextMenu), [`Tooltip`](/native/components/tooltip), [`InfoTip`](/native/components/infoTip) |
+| Navigation | [`Nav`](/native/components/nav), [`Breadcrumbs`](/native/components/breadcrumbs), [`Pagination`](/native/components/pagination) |
+| Data | [`Table`](/native/components/table), [`BarChart`](/native/data/barChart), [`LineChart`](/native/data/lineChart) |
+| Assistant | [`Mascot`](/native/components/mascot), [`WorkingIndicator`](/native/components/workingIndicator), [`LogoSpinner`](/native/components/logoSpinner) |
+| Social | [`Reactions`](/native/components/reactions) |
+
+`Dialog` opens as a bottom sheet, and so do `Select`'s options. `ThemeProvider`, `useTheme()`, `IconProvider` and fonts are on the [config page](/native/config).
+
+## Responsive props and safe areas
+
+`Flex`, `Row`, `Column` and `Card` take the same breakpoint props as on the web (`xl`, `l`, `m`, `s`, `xs`), and `safeArea` pads a view clear of the notch and home indicator once the app passes the screen's insets to `ThemeProvider`. See [responsive layouts](/native/basics/responsive) and the [quick start](/native/quick-start).
+
+## Differences from the web
+
+- **Units.** Numbers on spacing and size props are rem, as on the web. Rem follows the screen size: 15pt on phones, 16pt on tablets.
+- **Touch.** Pressed states replace hover, and small controls take taps from at least 44pt around them without being drawn larger.
+- **Clipping.** `radius` does not clip children. Pass `overflow="hidden"` when it should; on iOS that also hides the view's shadow.
+- **Media** shows images only. Enlarging on tap, videos and YouTube embeds are not supported.
+- **Tabs** have no arrow-key navigation, so `activation` has no effect.
+- **Core 3.0 names.** `Accordion` also takes `defaultOpen` and `onOpenChange`, `Tabs` takes `onValueChange`, and `StatusIndicator` takes `scheme`, so code written for 3.0 works here too.
+- **Safe areas.** The app passes the screen's safe areas to `ThemeProvider`, as shown below, instead of the browser providing them (see the [quick start](/native/quick-start)).
+
+## Design tokens
+
+Both packages read one token export generated from the web package's SCSS tokens, so a token change reaches the web and native apps together. The same file ships as `@once-ui-system/core/tokens.json` for other tools, such as Figma or Swift and Kotlin code generators.

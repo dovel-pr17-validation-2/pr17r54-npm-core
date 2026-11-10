@@ -1,0 +1,199 @@
+---
+title: "ToastProvider"
+summary: "ToastProvider enables global toast notifications via context and renders them with the Toaster component."
+updatedAt: "2026-10-11"
+docs: "once-ui/contexts/toastProvider.mdx"
+github: "contexts/ToastProvider.tsx"
+navLabel: "Toast"
+navIcon: "chip"
+navTag: "Update"
+navTagVariant: "success"
+---
+
+The `ToastProvider` wraps your app to provide access to `useToast`, allowing any component to trigger lightweight, dismissible toast messages globally.
+
+## Simple setup
+
+Wrap your app with `ToastProvider` to activate toast functionality.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  lineNumbers
+  codes={[
+    {
+      code: `<ToastProvider>
+    {children}
+</ToastProvider>`,
+      language: "tsx",
+      label: "layout.tsx",
+    },
+  ]}
+/>
+
+## Advanced setup
+
+We recommend using a `Providers` component to wrap your app. You can choose to display toasts at the top or bottom based on breakpoints.
+
+<CodeBlock
+  marginTop="16"  isCollapsible={false}
+
+  marginBottom="24"
+  lineNumbers
+  codes={[
+    {
+      code:
+`import { ToastProvider, ThemeProvider, DataThemeProvider, IconProvider } from "@once-ui-system/core";
+
+export function Providers({ children }: {
+    children: React.ReactNode
+}) {
+    return (
+      <ThemeProvider>
+        <DataThemeProvider>
+          <ToastProvider
+            s="top"
+          >
+            <IconProvider>
+              {children}
+            </IconProvider>
+          </ToastProvider>
+        </DataThemeProvider>
+      </ThemeProvider>
+    );
+}`,
+      language: "tsx",
+      highlight: "9-11,15",
+      label: "ToastProvider"
+    }
+  ]}
+/>
+
+Use the `useToast()` hook to display notifications from anywhere in your app:
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codeHeight={24}
+  isCollapsible={true}
+  lineNumbers
+  preview={
+    <ToastExample />
+  }
+  codes={[
+    {
+      code:
+`"use client";
+
+import React, { useState } from "react";
+import { Button, Row, useToast } from "@once-ui-system/core";
+
+export function ToastExample() {
+    const { addToast } = useToast();
+    const [count, setCount] = useState(0);
+
+    const handleAddToast = (variant: 'success' | 'danger' | 'warning' | 'info') => {
+      setCount(prev => prev + 1);
+      const labels: Record<string, string> = {
+        success: 'Success!',
+        danger: 'Error!',
+        warning: 'Warning!',
+        info: 'Info',
+      };
+      addToast({
+        variant,
+        message: "Toast #" + (count + 1) + " - " + labels[variant],
+        action: (variant === 'danger' || variant === 'warning') ? (
+          <Button size="s" onClick={() => addToast({ variant: 'success', message: 'Retry successful!' })}>
+            Retry
+          </Button>
+        ) : undefined,
+      });
+    };
+
+    return (
+      <Row gap="8" wrap>
+        <Button size="s" onClick={() => handleAddToast('success')}>
+          Show Success
+        </Button>
+        <Button size="s" variant="secondary" onClick={() => handleAddToast('danger')}>
+          Show Error
+        </Button>
+        <Button size="s" variant="tertiary" onClick={() => handleAddToast('warning')}>
+          Show Warning
+        </Button>
+        <Button size="s" variant="tertiary" onClick={() => handleAddToast('info')}>
+          Show Info
+        </Button>
+      </Row>
+    );
+
+}`,
+language: "tsx",
+label: "useToast"
+}
+]}
+/>
+
+## Duration and removing a toast
+
+`addToast` returns the new toast's id. Pass it to `removeToast` to take the toast down before it times out, such as a "Saving…" toast once the save is done. Each toast stays up for its `duration` in milliseconds: 6000 by default, and `Infinity` keeps it up until it is closed. The countdown pauses while the toast is hovered or has focus, and resumes with the time that was left.
+
+<CodeBlock
+  marginTop="16"
+  marginBottom="24"
+  codes={[
+    {
+      code:
+`const { addToast, removeToast } = useToast();
+
+async function save() {
+  const saving = addToast({ variant: "info", message: "Saving…", duration: Infinity });
+  await saveDocument();
+  removeToast(saving);
+  addToast({ variant: "success", message: "Saved" });
+}`,
+      language: "tsx",
+      label: "Save with progress",
+    },
+  ]}
+/>
+
+`addToast` and `removeToast` keep the same identity for the provider's lifetime, so an effect can list them as dependencies without running again each time a toast appears. There is no need to hold them in a ref.
+
+## Toaster
+
+The `ToastProvider` automatically renders a `<Toaster />` under the hood, passing it the current list of toasts and a `removeToast` handler.
+
+## API reference
+
+### useToast
+
+<PropsTable
+  content={[
+    ["toasts", "Toast[]"],
+    [
+      "addToast",
+      "(toast: { message: ReactNode; variant: 'success' | 'danger' | 'warning' | 'info'; action?: ReactNode; duration?: number }) => string",
+    ],
+    ["removeToast", "(id: string) => void"],
+  ]}
+/>
+
+### Toast
+
+<PropsTable
+  content={[
+    ["id", "string"],
+    ["variant", ["success", "danger", "warning", "info"]],
+    ["message", "ReactNode"],
+    ["action", "ReactNode"],
+    ["duration", "number", "6000", "Milliseconds before it closes. Infinity keeps it up until it is closed."],
+  ]}
+/>
+
+### ToastProvider
+
+<PropsTable
+  component="ToastProvider"
+/>

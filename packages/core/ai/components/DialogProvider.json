@@ -1,0 +1,15 @@
+{
+ "name": "DialogProvider",
+ "group": "components",
+ "props": {
+  "children": "!React.ReactNode"
+ },
+ "tags": [
+  "overlay",
+  "provider"
+ ],
+ "pairsWith": [
+  "Dialog"
+ ],
+ "mixinsRef": []
+}

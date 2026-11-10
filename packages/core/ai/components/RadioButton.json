@@ -1,0 +1,27 @@
+{
+ "name": "RadioButton",
+ "group": "components",
+ "extends": [
+  "InteractiveDetails"
+ ],
+ "props": {
+  "style": "React.CSSProperties",
+  "className": "string",
+  "checked": "boolean",
+  "defaultChecked": "boolean = false",
+  "name": "string",
+  "value": "string",
+  "disabled": "boolean",
+  "onToggle": "(checked: boolean) => void",
+  "hoverable": "boolean = true"
+ },
+ "tags": [
+  "form",
+  "settings"
+ ],
+ "pairsWith": [
+  "Column",
+  "Form"
+ ],
+ "mixinsRef": []
+}
